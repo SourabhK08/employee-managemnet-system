@@ -17,8 +17,9 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
+import registerSchema from "@/schema/registerSchema";
 
-function LoginPage() {
+function RegisterPage() {
   const router = useRouter();
   const {
     register,
@@ -26,10 +27,12 @@ function LoginPage() {
     formState: { errors },
     getValues,
   } = useForm({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(registerSchema),
     defaultValues: {
       email: "",
       password: "",
+      fullname: "",
+      phone_number: null,
     },
   });
 
@@ -44,19 +47,51 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-blue-500 via-purple-500 to-pink-500  p-4">
       <Card className="w-full max-w-sm bg-slate-100 opacity-98 shadow-lg">
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Register your account</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Enter your details below to register your account
           </CardDescription>
           <CardAction>
-            <Button variant="link" onClick={() => router.push("/register")}>
-              Sign Up
+            <Button variant="link" onClick={() => router.push("/")}>
+              Log In
             </Button>
           </CardAction>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="flex flex-col gap-6">
+              <div className="grid gap-2">
+                <Label htmlFor="fullname" required={true}>
+                  Full Name
+                </Label>
+                <Input
+                  id="fullname"
+                  type="string"
+                  placeholder="Enter your fullname"
+                  {...register("fullname")}
+                />
+                {errors.fullname && (
+                  <p className="text-red-500 text-sm">
+                    {errors.fullname.message}
+                  </p>
+                )}
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="phone_number" required={true}>
+                  Phone Number
+                </Label>
+                <Input
+                  id="phone_number"
+                  type="number"
+                  placeholder="Enter your phone_number"
+                  {...register("phone_number")}
+                />
+                {errors.phone_number && (
+                  <p className="text-red-500 text-sm">
+                    {errors.phone_number.message}
+                  </p>
+                )}
+              </div>
               <div className="grid gap-2">
                 <Label htmlFor="email" required={true}>
                   Email
@@ -97,10 +132,7 @@ function LoginPage() {
             </div>
             <CardFooter className="flex-col gap-2 mt-6">
               <Button type="submit" className="w-full">
-                Login
-              </Button>
-              <Button variant="outline" className="w-full">
-                Login with Google
+                Register
               </Button>
             </CardFooter>
           </form>
@@ -110,4 +142,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default RegisterPage;
