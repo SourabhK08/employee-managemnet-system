@@ -15,10 +15,14 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
+import * as yup from "yup";
 
-function LoginPage() {
+const schema = yup.object().shape({
+  email: yup.string().email().required("Email is required"),
+});
+
+function ForgotPasswordPage() {
   const router = useRouter();
   const {
     register,
@@ -26,10 +30,9 @@ function LoginPage() {
     formState: { errors },
     getValues,
   } = useForm({
-    resolver: yupResolver(loginSchema),
+    resolver: yupResolver(schema),
     defaultValues: {
       email: "",
-      password: "",
     },
   });
 
@@ -44,13 +47,14 @@ function LoginPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-blue-500 via-purple-500 to-pink-500  p-4">
       <Card className="w-full max-w-sm bg-slate-100 opacity-98 shadow-lg">
         <CardHeader>
-          <CardTitle>Login to your account</CardTitle>
+          <CardTitle>Forgot your password</CardTitle>
           <CardDescription>
-            Enter your email below to login to your account
+            Please enter the email address you'd like your password reset
+            information sent to
           </CardDescription>
           <CardAction>
-            <Button variant="link" onClick={() => router.push("/register")}>
-              Sign Up
+            <Button variant="link" onClick={() => router.push("/")}>
+              Back to login
             </Button>
           </CardAction>
         </CardHeader>
@@ -64,44 +68,21 @@ function LoginPage() {
                 <Input
                   id="email"
                   type="email"
-                  placeholder="m@example.com"
+                  placeholder="Enter email"
                   {...register("email")}
                 />
                 {errors.email && (
                   <p className="text-red-500 text-sm">{errors.email.message}</p>
                 )}
               </div>
-              <div className="grid gap-2">
-                <div className="flex items-center">
-                  <Label htmlFor="password" required={true}>
-                    Password
-                  </Label>
-                  <a
-                    href="/forgot-password"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                />
-                {errors.password && (
-                  <p className="text-red-500 text-sm">
-                    {errors.password.message}
-                  </p>
-                )}
-              </div>
             </div>
             <CardFooter className="flex-col gap-2 mt-6">
               <Button type="submit" className="w-full">
-                Login
+                Request reset link
               </Button>
-              <Button variant="outline" className="w-full">
+              {/* <Button variant="outline" className="w-full">
                 Login with Google
-              </Button>
+              </Button> */}
             </CardFooter>
           </form>
         </CardContent>
@@ -110,4 +91,4 @@ function LoginPage() {
   );
 }
 
-export default LoginPage;
+export default ForgotPasswordPage;

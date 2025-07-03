@@ -15,7 +15,6 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
 import registerSchema from "@/schema/registerSchema";
 
@@ -111,12 +110,6 @@ function RegisterPage() {
                   <Label htmlFor="password" required={true}>
                     Password
                   </Label>
-                  <a
-                    href="#"
-                    className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
-                  >
-                    Forgot your password?
-                  </a>
                 </div>
                 <Input
                   id="password"
