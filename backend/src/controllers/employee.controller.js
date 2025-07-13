@@ -51,4 +51,84 @@ const createEmployee = asyncHandler(async (req, res) => {
     );
 });
 
-export { createEmployee };
+const listEmployees = asyncHandler(async (req,res) => {
+  
+  const emps = await Employee.findById().select('-__v')
+
+  if(!emps){
+    throw new ApiError(500,'Employee list not fetched')
+  }
+
+  const count = emps.length;
+
+  return res.status(200).json(
+    new ApiResponse(200, {count,emps},"Employee list fetched successfully")
+  )
+})
+
+const getEmployeeById = asyncHandler( async(req,res) => {
+
+  const {id} = req.params;
+
+  const fetchedEmp = await Employee.findById(id).select('-__v');
+
+  if(!fetchedEmp){
+    throw new ApiError(500,'Employee data not fetched')
+  }
+
+  return res
+  .status(200)
+  .json(
+    new ApiResponse(200,fetchedEmp,'Employee data fetched successfully')
+  )
+})
+
+const updateEmployee = asyncHandler(async(req,res) => {
+  const {id} = req.params;
+  const {name,email,phone,salary,department,role} = req.body;
+
+  const updatedEmp = await Employee.findByIdAndUpdate(
+    id,
+    {
+      $set:{
+        name:name.toLowerCase(),
+        email,
+        phone,
+        salary,
+        department,
+        role
+      }
+    },
+    {
+      new:true
+    }
+  )
+
+  if(!updatedEmp){
+    throw new ApiError(500,'Can not update employee')
+  }
+
+  return res
+  .status(200)
+  .json(200,updatedEmp,'Employee details updated successfully')
+})
+
+const deleteEmployee = asyncHandler(async(req,res) => {
+  const {id} = req.params;
+
+  const deletedEmp = await Employee.findByIdAndDelete(id).select("-__v");
+
+  if(!deletedEmp){
+    throw new ApiError(500,'Can not delete employee')
+  }
+
+  return res
+  .status(200)
+  .json(
+     new ApiResponse(200,deletedEmp,"Employee deleted successfully")
+  )
+})
+
+
+
+export { createEmployee,listEmployees,getEmployeeById,updateEmployee,deleteEmployee };
