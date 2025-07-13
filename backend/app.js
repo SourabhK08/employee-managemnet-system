@@ -3,10 +3,17 @@ import express from "express";
 import cors from "cors";
 const app = express();
 
+// app.use(
+//   cors({
+//     origin: process.env.CORS_ORIGIN,
+//     credentials: true,
+//   })
+// );
+
 app.use(
   cors({
-    origin: process.env.CORS_ORIGIN,
-    credentials: true,
+    origin: "*", // TEMPORARY: allow all origins
+    credentials: false, // disable for now
   })
 );
 
@@ -29,7 +36,7 @@ app.use(cookieParser());
 
 // ROUTES
 
-import employeeRouter from "./src/routes/employee.route";
+import employeeRouter from "./src/routes/employee.route.js";
 
 app.use("/api/employee", employeeRouter);
 
