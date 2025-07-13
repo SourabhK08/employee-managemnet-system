@@ -22,11 +22,11 @@ const employeeSchema = new Schema(
     image: {
       type: String,
     },
-    department: {
+    department: [{
       type: Schema.Types.ObjectId,
       ref: "Department",
       required: true,
-    },
+    }],
     role: {
       type: Schema.Types.ObjectId,
       ref: "Role",

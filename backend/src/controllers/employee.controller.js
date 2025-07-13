@@ -36,7 +36,9 @@ const createEmployee = asyncHandler(async (req, res) => {
 
   console.log("Emp det ---", emp);
 
-  const createdEmployee = await Employee.findById(emp._id);
+  const createdEmployee = await Employee.findById(emp._id)
+  .populate({ path: "department", select: "name description" })
+  .populate({ path: "role", select: "name description" });
 
   if (!createdEmployee) {
     throw new ApiError(500, "Employee not created successfully");
