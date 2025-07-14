@@ -12,8 +12,8 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*" || "http://localhost:3000", // TEMPORARY: allow all origins
-    credentials: false, // disable for now
+    origin: "http://localhost:3000",
+    credentials: true,
   })
 );
 
@@ -34,9 +34,9 @@ app.use(express.static("public"));
 
 app.use(cookieParser());
 
-app.get('/api',(req,res) => {
-  res.send("Hello we are connected")
-})
+app.get("/api", (req, res) => {
+  res.send("Hello we are connected");
+});
 
 // ROUTES
 

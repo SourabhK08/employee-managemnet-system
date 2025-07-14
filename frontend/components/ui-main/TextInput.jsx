@@ -2,39 +2,35 @@ import React from "react";
 
 const TextInput = ({
   label,
-  type = 'text',
+  type = "text",
   name,
   placeholder,
   required,
   classname,
   error,
-  register
+  register,
 }) => {
   return (
-    <div className="">
+    <div className="mt-4">
       {label && (
-        <label htmlFor={name} className={`${classname}`}>
+        <label htmlFor={name} className={` p-2 ${classname}`}>
           {" "}
           {label} {required && <span className="text-red-500"> *</span>}{" "}
-        </label> 
+        </label>
       )}
-      <div className="mt-1 p-2 px-2">
+      <div className="p-2 px-2">
         <input
           type={type}
           placeholder={placeholder}
           name={name}
-          className={`border ${classname}`}
+          className={`border p-2 w-full rounded-md ${classname} `}
           {...(register ? register(name) : {})}
         />
       </div>
 
-      {
-        error && (
-            <div className="mt-2 text-red-500 text-sm">
-                {error.message}
-            </div>
-        )
-      }
+      {error && (
+        <div className="mt-2 text-red-500 text-sm">{error.message}</div>
+      )}
     </div>
   );
 };
