@@ -53,16 +53,16 @@ const createEmployee = asyncHandler(async (req, res) => {
 
 const listEmployees = asyncHandler(async (req,res) => {
   
-  const emps = await Employee.findById().select('-__v')
+  const employee = await Employee.find().select('-__v')
 
-  if(!emps){
+  if(!employee){
     throw new ApiError(500,'Employee list not fetched')
   }
 
-  const count = emps.length;
+  const count = employee.length;
 
   return res.status(200).json(
-    new ApiResponse(200, {count,emps},"Employee list fetched successfully")
+    new ApiResponse(200, {count,employee},"Employee list fetched successfully")
   )
 })
 

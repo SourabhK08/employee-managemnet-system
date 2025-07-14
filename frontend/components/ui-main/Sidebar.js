@@ -1,20 +1,33 @@
 "use client";
 import { AlignJustify, X } from "lucide-react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useState } from "react";
 
 export default function Sidebar() {
   const [sidebarOpen, setsidebarOpen] = useState(true);
 
+  const pathname = usePathname()
+
   const navItems = [
     {
-      label: "Employee",
+      label: "Dashboard",
       href: "/dashboard",
       // permission: "view_employee",
     },
     {
+      label: "Employee",
+      href: "/employee",
+      // permission: "view_employee",
+    },
+    {
       label: "Department",
-      href: "/dashboard/profile",
+      href: "/department",
+      // permission: "view_department",
+    },
+    {
+      label: "Role",
+      href: "/role",
       // permission: "view_department",
     },
     {
@@ -59,11 +72,14 @@ export default function Sidebar() {
           <nav>
             <ul className="space-y-2">
               {navItems.map((item, index) => {
+
+                const isActive = pathname === item.href;
+
                 return (
                   <li key={index}>
                     <Link
                       href={item.href}
-                      className="block px-1 py-2 rounded hover:bg-gray-700 transition"
+                      className={`block px-1 py-2 rounded  transition ${isActive ? 'bg-gray-700 font-semibold' : 'hover:bg-gray-700' } `}
                     >
                       {item.label}
                     </Link>

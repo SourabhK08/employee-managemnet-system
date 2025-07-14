@@ -28,7 +28,7 @@ const createRole = asyncHandler(async (req, res) => {
 });
 
 const listRole = asyncHandler(async (req, res) => {
-  const roles = await Role.find().select("-__v");
+  const roles = await Role.find().select("-__v -updatedAt -createdAt");
 
   if (!roles || roles.length === 0) {
     throw new ApiError(404, "No roles found");

@@ -12,7 +12,7 @@ const app = express();
 
 app.use(
   cors({
-    origin: "*", // TEMPORARY: allow all origins
+    origin: "*" || "http://localhost:3000", // TEMPORARY: allow all origins
     credentials: false, // disable for now
   })
 );
