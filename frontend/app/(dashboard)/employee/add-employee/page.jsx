@@ -2,6 +2,7 @@
 import SelectInput from "@/components/ui-main/SelectInput";
 import TextInput from "@/components/ui-main/TextInput";
 import { Button } from "@/components/ui/button";
+import { useGetDepartmentListQuery } from "@/store/features/departmentSlice";
 import { useGetRoleListQuery } from "@/store/features/roleSlice";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -15,7 +16,17 @@ function page() {
     setValue,
     formState: { errors },
     control,
-  } = useForm();
+    handleSubmit
+  } = useForm({
+    defaultValues: {
+      role: '',
+      department:'',
+      name:'',
+     email:'',
+     phone:null,
+     salary:null,
+    },
+  });
 
   const options = [
     { id: "1", label: "Option One" },
@@ -27,9 +38,22 @@ function page() {
 
   console.log("roleList", roleList);
 
+  const { data: departmentList } = useGetDepartmentListQuery();
+
+  console.log("departmentList", departmentList);
+
+  const onsubmit = async data => {
+    console.log("form submitted data is here",data);
+    
+  }
+
+
+  console.log("form values",getValues(),"form errors",errors);
+  
+
   return (
     <>
-      <form className="bg-gray-100 p-4">
+      <form className="bg-gray-100 p-4" onSubmit={handleSubmit(onsubmit)}>
         <div className="p-2 text-center border-b-2">
           <h2>Add Employee</h2>
         </div>
@@ -66,7 +90,10 @@ function page() {
             render={({ field }) => (
               <SelectInput
                 label={"Department"}
-                options={options}
+                options={departmentList?.data?.dept.map(dept => ({
+                  id:dept._id,
+                  label:dept.name
+                })) || []}
                 value={field.value}
                 onChange={field.onChange}
                 placeholder="Select Department"
@@ -79,7 +106,12 @@ function page() {
             render={({ field }) => (
               <SelectInput
                 label={"Role"}
-                options={options}
+                options={
+                  roleList?.data?.roles?.map((role) => ({
+                    id: role._id,
+                    label: role.name,
+                  })) || []
+                }
                 value={field.value}
                 onChange={field.onChange}
                 placeholder="Select Role"
@@ -89,7 +121,7 @@ function page() {
         </div>
 
         <div className="flex justify-between p-3 mt-5">
-          <Button>Back</Button>
+          <Button onClick={() => router.push('/employee')} >Back</Button>
           <Button type="submit" variant="submit">
             Submit
           </Button>
