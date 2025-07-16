@@ -40,8 +40,10 @@ function Button({
   className,
   variant,
   size,
+  icon: Icon,
   asChild = false,
   type = "button",
+  children,
   ...props
 }) {
   const Comp = asChild ? Slot : "button";
@@ -49,10 +51,16 @@ function Button({
   return (
     <Comp
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(
+        buttonVariants({ variant, size, className }),
+        "flex items-center gap-2" // <- ensures icon and text are inline
+      )}
       type={type}
       {...props}
-    />
+    >
+      {Icon && <Icon className="w-4 h-4" />}
+      {children}
+    </Comp>
   );
 }
 

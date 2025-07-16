@@ -38,6 +38,14 @@ app.get("/api", (req, res) => {
   res.send("Hello we are connected");
 });
 
+app.use((req, res, next) => {
+  console.log("Request incoming:");
+  console.log("Method:", req.method);
+  console.log("Path:", req.path);
+  console.log("Origin:", req.get("Origin"));
+  next();
+});
+
 // ROUTES
 
 import employeeRouter from "./src/routes/employee.route.js";

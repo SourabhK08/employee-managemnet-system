@@ -29,7 +29,7 @@ const TextInput = ({
       </div>
 
       {error && (
-        <div className="mt-2 text-red-500 text-sm">{error.message}</div>
+        <div className="mt-1 text-red-500 text-sm px-2">{error.message}</div>
       )}
     </div>
   );

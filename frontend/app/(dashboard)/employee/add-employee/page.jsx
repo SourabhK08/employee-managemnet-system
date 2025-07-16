@@ -2,37 +2,36 @@
 import SelectInput from "@/components/ui-main/SelectInput";
 import TextInput from "@/components/ui-main/TextInput";
 import { Button } from "@/components/ui/button";
+import employeeSchema from "@/schema/addEmployeeSchema";
 import { useGetDepartmentListQuery } from "@/store/features/departmentSlice";
+import { useGetEmployeeByIdQuery } from "@/store/features/employeeSlice";
 import { useGetRoleListQuery } from "@/store/features/roleSlice";
-import { useRouter } from "next/navigation";
+import { yupResolver } from "@hookform/resolvers/yup";
+import { useRouter, useSearchParams } from "next/navigation";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 
 function page() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const {
     register,
     getValues,
     setValue,
     formState: { errors },
     control,
-    handleSubmit
+    handleSubmit,
   } = useForm({
+    resolver: yupResolver(employeeSchema),
     defaultValues: {
-      role: '',
-      department:'',
-      name:'',
-     email:'',
-     phone:null,
-     salary:null,
+      role: "",
+      department: "",
+      name: "",
+      email: "",
+      phone: null,
+      salary: null,
     },
   });
-
-  const options = [
-    { id: "1", label: "Option One" },
-    { id: "2", label: "Option Two" },
-    { id: "3", label: "Option Three" },
-  ];
 
   const { data: roleList } = useGetRoleListQuery();
 
@@ -42,14 +41,20 @@ function page() {
 
   console.log("departmentList", departmentList);
 
-  const onsubmit = async data => {
-    console.log("form submitted data is here",data);
-    
-  }
+  const id = searchParams.get("id");
+  const mode = searchParams.get("mode");
 
+  console.log("id", id, "mode", mode);
 
-  console.log("form values",getValues(),"form errors",errors);
-  
+  const { data: empData } = useGetEmployeeByIdQuery(id, { skip: !id });
+
+  console.log("empdata===>>", empData);
+
+  const onsubmit = async (data) => {
+    console.log("form submitted data is here", data);
+  };
+
+  console.log("form values", getValues(), "form errors", errors);
 
   return (
     <>
@@ -63,12 +68,14 @@ function page() {
             placeholder="Enter name"
             label={"Name"}
             register={register}
+            error={errors.name}
           />
           <TextInput
             name="email"
             placeholder="Enter email"
             label={"Email"}
             register={register}
+            error={errors.email}
           />
           <TextInput
             name="phone"
@@ -76,6 +83,7 @@ function page() {
             placeholder="Enter phone number"
             label={"Phone"}
             register={register}
+            error={errors.phone}
           />
           <TextInput
             name="salary"
@@ -83,6 +91,7 @@ function page() {
             placeholder="Enter salary"
             label={"Salary"}
             register={register}
+            error={errors.salary}
           />
           <Controller
             name="department"
@@ -90,10 +99,12 @@ function page() {
             render={({ field }) => (
               <SelectInput
                 label={"Department"}
-                options={departmentList?.data?.dept.map(dept => ({
-                  id:dept._id,
-                  label:dept.name
-                })) || []}
+                options={
+                  departmentList?.data?.dept.map((dept) => ({
+                    id: dept._id,
+                    label: dept.name,
+                  })) || []
+                }
                 value={field.value}
                 onChange={field.onChange}
                 placeholder="Select Department"
@@ -121,7 +132,7 @@ function page() {
         </div>
 
         <div className="flex justify-between p-3 mt-5">
-          <Button onClick={() => router.push('/employee')} >Back</Button>
+          <Button onClick={() => router.push("/employee")}>Back</Button>
           <Button type="submit" variant="submit">
             Submit
           </Button>
