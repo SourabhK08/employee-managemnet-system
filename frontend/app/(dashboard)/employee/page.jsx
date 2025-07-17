@@ -1,16 +1,40 @@
 "use client";
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
-import { useGetEmployeeListQuery } from "@/store/features/employeeSlice";
+import { useDeleteEmployeeMutation, useGetEmployeeListQuery } from "@/store/features/employeeSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
+import { toast } from "react-toastify";
 
 function page() {
   const router = useRouter();
-  const { data: employeeList, isLoading } = useGetEmployeeListQuery();
+  const { data: employeeList, isLoading ,refetch} = useGetEmployeeListQuery();
+    const [deleteEmployee] = useDeleteEmployeeMutation()
 
   const employeeData = employeeList?.data?.employee;
+
+  const handleDelete = async id => {
+    console.log("selected id",id);
+    
+    try {
+    const res = await deleteEmployee(id).unwrap(); 
+    console.log("del res ---", res);
+
+    if (res.success) {
+      toast.success(res.message || "Employee deleted successfully");
+    } else {
+      toast.error("Failed to delete employee");
+    }
+
+    refetch(); 
+  } catch (err) {
+    console.error("Delete error", err);
+    toast.error(err?.message || "Something went wrong");
+  }
+
+    refetch()
+  }
 
   const columns = [
     {
@@ -51,7 +75,7 @@ function page() {
           </Button>
           <Button
             className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
-            onClick={() => alert(`Delete ${row.name}`)}
+            onClick={() => handleDelete(row?._id)}
           >
             Delete
           </Button>

@@ -1,5 +1,5 @@
-import { Employee } from "../models/emp.model.js";
-import { Role } from "../models/role.model.js";
+import { Employee } from "../models/index.js";
+import { Role } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";

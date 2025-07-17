@@ -1,4 +1,4 @@
-import { Department } from "../models/department.model.js";
+import { Department } from "../models/index.js";
 import { Employee } from "../models/emp.model.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";

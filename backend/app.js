@@ -48,9 +48,9 @@ app.use((req, res, next) => {
 
 // ROUTES
 
-import employeeRouter from "./src/routes/employee.route.js";
-import departmentRoutes from "./src/routes/department.route.js";
-import roleRoutes from "./src/routes/role.route.js";
+import {employeeRouter} from "./src/routes/index.js";
+import {departmentRoutes} from "./src/routes/index.js";
+import {roleRoutes} from "./src/routes/index.js";
 
 app.use("/api/employee", employeeRouter);
 app.use("/api/department", departmentRoutes);

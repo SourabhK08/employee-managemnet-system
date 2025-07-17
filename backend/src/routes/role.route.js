@@ -9,4 +9,4 @@ roleRoutes.route('/:id').get(getRoleById)
 roleRoutes.route('/:id').put(updateRole)
 roleRoutes.route('/:id').delete(deleteRole)
 
-export default roleRoutes
+export  {roleRoutes}

@@ -1,4 +1,4 @@
-import { Employee } from "../models/emp.model.js";
+import { Employee } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
@@ -101,7 +101,7 @@ const updateEmployee = asyncHandler(async (req, res) => {
     id,
     {
       $set: {
-        name: name.toLowerCase(),
+        name: name,
         email,
         phone,
         salary,

@@ -1,15 +1,24 @@
 "use client";
+import ReactSelect from "react-select";
 import SelectInput from "@/components/ui-main/SelectInput";
 import TextInput from "@/components/ui-main/TextInput";
 import { Button } from "@/components/ui/button";
 import employeeSchema from "@/schema/addEmployeeSchema";
 import { useGetDepartmentListQuery } from "@/store/features/departmentSlice";
-import { useGetEmployeeByIdQuery } from "@/store/features/employeeSlice";
+import {
+  useAddEmployeeMutation,
+  useGetEmployeeByIdQuery,
+  useUpdateEmployeeMutation,
+} from "@/store/features/employeeSlice";
 import { useGetRoleListQuery } from "@/store/features/roleSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { toast } from "react-toastify";
+
+
+// issue in update emp msg
 
 function page() {
   const router = useRouter();
@@ -20,12 +29,13 @@ function page() {
     setValue,
     formState: { errors },
     control,
+    reset,
     handleSubmit,
   } = useForm({
     resolver: yupResolver(employeeSchema),
     defaultValues: {
       role: "",
-      department: "",
+      department: [],
       name: "",
       email: "",
       phone: null,
@@ -47,12 +57,45 @@ function page() {
   console.log("id", id, "mode", mode);
 
   const { data: empData } = useGetEmployeeByIdQuery(id, { skip: !id });
+  const [addEmployee] = useAddEmployeeMutation();
+  const [updatedEmployee] = useUpdateEmployeeMutation();
 
   console.log("empdata===>>", empData);
 
   const onsubmit = async (data) => {
     console.log("form submitted data is here", data);
+
+    try {
+      if (mode === "edit" && id) {
+        const res = await updatedEmployee({
+          id,
+          updatedEmpData: data,
+        }).unwrap();
+
+        toast.success(res.message || "Emp updated successfully---");
+        router.push("/employee");
+      } else {
+        const res = await addEmployee(data).unwrap();
+
+        toast.success(res.message || "Employee created successfully");
+        router.push("/employee");
+      }
+    } catch (error) {
+      toast.error(error?.message || "An error occured");
+    }
   };
+
+  useEffect(() => {
+    if (empData && mode === "edit") {
+      reset(empData?.data);
+    }
+
+    setValue(
+      "department",
+      empData?.data?.department.map((dept) => dept?._id)
+    );
+    setValue("role", empData?.data?.role?._id);
+  }, [empData, id]);
 
   console.log("form values", getValues(), "form errors", errors);
 
@@ -60,7 +103,10 @@ function page() {
     <>
       <form className="bg-gray-100 p-4" onSubmit={handleSubmit(onsubmit)}>
         <div className="p-2 text-center border-b-2">
-          <h2>Add Employee</h2>
+          <h1 className="font-bold">
+            {" "}
+            {mode === "edit" ? "Update" : "Add"} Employee
+          </h1>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3  gap-2">
           <TextInput
@@ -69,6 +115,7 @@ function page() {
             label={"Name"}
             register={register}
             error={errors.name}
+            required={true}
           />
           <TextInput
             name="email"
@@ -76,6 +123,7 @@ function page() {
             label={"Email"}
             register={register}
             error={errors.email}
+            required={true}
           />
           <TextInput
             name="phone"
@@ -84,6 +132,7 @@ function page() {
             label={"Phone"}
             register={register}
             error={errors.phone}
+            required={true}
           />
           <TextInput
             name="salary"
@@ -92,25 +141,107 @@ function page() {
             label={"Salary"}
             register={register}
             error={errors.salary}
+            required={true}
           />
-          <Controller
-            name="department"
-            control={control}
-            render={({ field }) => (
-              <SelectInput
-                label={"Department"}
-                options={
-                  departmentList?.data?.dept.map((dept) => ({
-                    id: dept._id,
-                    label: dept.name,
-                  })) || []
-                }
-                value={field.value}
-                onChange={field.onChange}
-                placeholder="Select Department"
-              />
+
+          <div className="w-full mt-5">
+            <label className="form-label" htmlFor="department">
+              Select Department <span style={{ color: "red" }}>*</span>
+            </label>
+            <Controller
+              name="department"
+              control={control}
+              render={({ field }) => (
+                <ReactSelect
+                  {...field}
+                  options={
+                    departmentList?.data?.dept?.map((dept) => ({
+                      value: dept._id,
+                      label: dept.name,
+                    })) || []
+                  }
+                  placeholder="Select departments"
+                  className="react-select"
+                  classNamePrefix="select"
+                  id="department"
+                  isMulti={true}
+                  closeMenuOnSelect={false}
+                  value={
+                    departmentList?.data?.dept
+                      ?.filter((dept) => field.value?.includes(dept._id))
+                      .map((dept) => ({
+                        value: dept._id,
+                        label: dept.name,
+                      })) || []
+                  }
+                  onChange={(selectedOptions) => {
+                    // Send only the array of selected values (_id)
+                    const selectedValues = selectedOptions.map(
+                      (opt) => opt.value
+                    );
+                    field.onChange(selectedValues);
+                  }}
+                  styles={{
+                    control: (provided, state) => ({
+                      ...provided,
+                      backgroundColor:
+                        state.isFocused || state.menuIsOpen
+                          ? "transparent"
+                          : "transparent",
+                      color:
+                        state.isFocused || state.menuIsOpen
+                          ? "black"
+                          : "inherit",
+                      borderRadius: "8px",
+                      paddingTop: "4px",
+                      paddingBottom: "4px",
+                      borderColor: "#d1d5db",
+                      boxShadow: "none",
+                      outline: "none",
+                      "&:hover": {
+                        borderColor: "#d1d5db",
+                      },
+                    }),
+                    menu: (provided) => ({
+                      ...provided,
+                      borderRadius: "8px",
+                      paddingTop: "5px",
+                      paddingBottom: "5px",
+                      backgroundColor: "white",
+                      color: "black",
+                    }),
+                    multiValue: (provided) => ({
+                      ...provided,
+                      backgroundColor: "#e2e8f0", // Tailwind's gray-200
+                      color: "black",
+                    }),
+                    multiValueLabel: (provided) => ({
+                      ...provided,
+                      color: "black",
+                    }),
+                    multiValueRemove: (provided) => ({
+                      ...provided,
+                      color: "black",
+                      ":hover": {
+                        backgroundColor: "#cbd5e0", // Tailwind's gray-300
+                        color: "black",
+                      },
+                    }),
+                    placeholder: (provided) => ({
+                      ...provided,
+                      color: "#a0aec0", // Tailwind's gray-400
+                    }),
+                  }}
+                />
+              )}
+            />
+            {errors.department && (
+              <p className="text-red-500 text-sm mt-1">
+                {errors.department.message}
+              </p>
             )}
-          />
+          </div>
+
           <Controller
             name="role"
             control={control}
@@ -125,16 +256,20 @@ function page() {
                 }
                 value={field.value}
                 onChange={field.onChange}
+                required={true}
                 placeholder="Select Role"
+                error={errors.role}
               />
             )}
           />
         </div>
 
         <div className="flex justify-between p-3 mt-5">
-          <Button onClick={() => router.push("/employee")}>Back</Button>
+          <Button type="button" onClick={() => router.push("/employee")}>
+            {mode === "edit" ? "Cancel" : "Back"}
+          </Button>
           <Button type="submit" variant="submit">
-            Submit
+            {mode === "edit" ? "Update" : "Submit"}
           </Button>
         </div>
       </form>

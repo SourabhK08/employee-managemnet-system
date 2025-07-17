@@ -18,7 +18,7 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
     addEmployee: builder.mutation({
       query: (empData) => ({
         url: `/employee/add`,
-        body: { empData },
+        body: empData ,
         method: "POST",
       }),
     }),
@@ -26,7 +26,7 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
     updateEmployee: builder.mutation({
       query: ({ id, updatedEmpData }) => ({
         url: `/employee/${id}`,
-        body: { updatedEmpData },
+        body: updatedEmpData,
         method: "PUT",
       }),
     }),
@@ -34,7 +34,6 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
     deleteEmployee: builder.mutation({
       query: (id) => ({
         url: `/employee/${id}`,
-        body: { id },
         method: "DELETE",
       }),
     }),

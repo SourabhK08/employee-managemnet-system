@@ -11,4 +11,4 @@ departmentRoutes.route('/:id').put(updateDepartment)
 departmentRoutes.route('/:id').delete(deleteDepartment)
 
 
-export default departmentRoutes
+export  {departmentRoutes}
