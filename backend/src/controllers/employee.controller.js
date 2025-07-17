@@ -120,7 +120,9 @@ const updateEmployee = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(200, updatedEmp, "Employee details updated successfully");
+    .json(
+      new ApiResponse(200, updatedEmp, "Employee details updated successfully")
+    );
 });
 
 const deleteEmployee = asyncHandler(async (req, res) => {

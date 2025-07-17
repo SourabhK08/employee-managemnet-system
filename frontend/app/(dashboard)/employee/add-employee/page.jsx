@@ -17,9 +17,6 @@ import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
 
-
-// issue in update emp msg
-
 function page() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -72,7 +69,7 @@ function page() {
           updatedEmpData: data,
         }).unwrap();
 
-        toast.success(res.message || "Emp updated successfully---");
+        toast.success(res.message || "Employee updated successfully");
         router.push("/employee");
       } else {
         const res = await addEmployee(data).unwrap();
@@ -81,7 +78,7 @@ function page() {
         router.push("/employee");
       }
     } catch (error) {
-      toast.error(error?.message || "An error occured");
+      toast.error(error?.data?.message || "An error occured");
     }
   };
 
@@ -103,7 +100,7 @@ function page() {
     <>
       <form className="bg-gray-100 p-4" onSubmit={handleSubmit(onsubmit)}>
         <div className="p-2 text-center border-b-2">
-          <h1 className="font-bold">
+          <h1 className="font-bold text-2xl">
             {" "}
             {mode === "edit" ? "Update" : "Add"} Employee
           </h1>

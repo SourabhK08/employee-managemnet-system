@@ -6,6 +6,7 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
       query: () => ({
         url: "/employee/",
       }),
+      providesTags: ["empList"],
     }),
 
     getEmployeeById: builder.query({
@@ -18,9 +19,10 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
     addEmployee: builder.mutation({
       query: (empData) => ({
         url: `/employee/add`,
-        body: empData ,
+        body: empData,
         method: "POST",
       }),
+      invalidatesTags: ["empList"],
     }),
 
     updateEmployee: builder.mutation({
@@ -29,6 +31,7 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
         body: updatedEmpData,
         method: "PUT",
       }),
+      invalidatesTags: ["empList"],
     }),
 
     deleteEmployee: builder.mutation({
@@ -36,6 +39,7 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
         url: `/employee/${id}`,
         method: "DELETE",
       }),
+      invalidatesTags: ["empList"],
     }),
   }),
 });
