@@ -48,11 +48,11 @@ function LoginPage() {
           <CardDescription>
             Enter your email below to login to your account
           </CardDescription>
-          <CardAction>
+          {/* <CardAction>
             <Button variant="link" onClick={() => router.push("/register")}>
               Sign Up
             </Button>
-          </CardAction>
+          </CardAction> */}
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit(onSubmit)}>

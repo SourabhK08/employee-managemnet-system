@@ -1,57 +1,132 @@
 "use client";
+
+import React, { useEffect, useState } from "react";
 import ReusableTable from "@/components/ui-main/Table";
+
 import { Button } from "@/components/ui/button";
-import { useGetDepartmentListQuery } from "@/store/features/departmentSlice";
-import {
-  useDeleteEmployeeMutation,
-  useGetEmployeeListQuery,
-} from "@/store/features/employeeSlice";
+
 import { PlusIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import React from "react";
 import { toast } from "react-toastify";
 
-function page() {
-  const router = useRouter();
-  const { data: departmentList, isLoading } = useGetDepartmentListQuery();
-  const [deleteEmployee] = useDeleteEmployeeMutation();
+import { useForm } from "react-hook-form";
+import { yupResolver } from "@hookform/resolvers/yup";
+
+import SheetDrawer from "@/components/ui-main/Sheet";
+import deptSchema from "@/schema/addDepartmentSchema copy";
+import {
+  useAddDepartmentMutation,
+  useDeleteDepartmentMutation,
+  useGetDepartmentListQuery,
+  useUpdateDepartmentMutation,
+} from "@/store/features/departmentSlice";
+import AddDepartmentForm from "./_components/add-department";
+
+function DepartmentPage() {
+  const {
+    data: departmentList,
+    isLoading,
+    refetch,
+  } = useGetDepartmentListQuery();
+  const [addDepartment] = useAddDepartmentMutation();
+  const [updateDepartment] = useUpdateDepartmentMutation();
+  const [deleteDepartment] = useDeleteDepartmentMutation();
 
   const deptData = departmentList?.data?.dept;
 
+ 
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+  const [mode, setMode] = useState("add");
+  const [selectedDept, setSelectedDept] = useState(null);
+
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: yupResolver(deptSchema),
+    defaultValues: {
+      name: "",
+      description: "",
+    },
+  });
+
+  useEffect(() => {
+    if (mode === "edit" && selectedDept) {
+      reset({
+        name: selectedDept.name,
+        description: selectedDept.description,
+      });
+    } else {
+      reset({
+        name: "",
+        description: "",
+      });
+    }
+  }, [selectedDept, mode, isSheetOpen]);
+
   const handleDelete = async (id) => {
-    console.log("selected id", id);
-
     try {
-      const res = await deleteEmployee(id).unwrap();
-      console.log("del res ---", res);
-
+      const res = await deleteDepartment(id).unwrap();
       if (res.success) {
-        toast.success(res.message || "Employee deleted successfully");
+        toast.success(res.message || "Deleted successfully");
+        refetch();
       } else {
-        toast.error("Failed to delete employee");
+        toast.error("Failed to delete");
       }
     } catch (err) {
-      console.error("Delete error", err);
       toast.error(err?.message || "Something went wrong");
     }
+  };
+
+  const onSubmit = async (data) => {
+    try {
+      if (mode === "edit") {
+        const res = await updateDepartment({
+          id: selectedDept._id,
+          updatedDept: data,
+        }).unwrap();
+        toast.success(res.message || "Department updated");
+      } else {
+        const res = await addDepartment(data).unwrap();
+        toast.success(res.message || "Department added");
+      }
+
+      setIsSheetOpen(false);
+      setSelectedDept(null);
+      refetch();
+    } catch (err) {
+      toast.error(err?.data?.message || "Error occurred");
+    }
+  };
+
+  const openAddSheet = () => {
+    setMode("add");
+    setSelectedDept(null);
+    setIsSheetOpen(true);
+  };
+
+  const openEditSheet = (dept) => {
+    setMode("edit");
+    setSelectedDept(dept);
+    setIsSheetOpen(true);
   };
 
   const columns = [
     {
       Header: "ID",
       accessor: "_id",
-      render: (value) => value.slice(-6), // Show last 6 characters
+      render: (value) => value.slice(-6),
     },
     {
       Header: "Name",
       accessor: "name",
-      render: (value) => value.charAt(0).toUpperCase() + value.slice(1),
     },
     {
       Header: "Description",
       accessor: "description",
     },
-
     {
       Header: "Actions",
       accessor: "actions",
@@ -59,15 +134,13 @@ function page() {
         <div className="flex gap-2">
           <Button
             className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
-            onClick={() =>
-              router.push(`/department/add-department?id=${row._id}&mode=edit`)
-            }
+            onClick={() => openEditSheet(row)}
           >
             Edit
           </Button>
           <Button
-            className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
-            onClick={() => handleDelete(row?._id)}
+           className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+            onClick={() => handleDelete(row._id)}
           >
             Delete
           </Button>
@@ -77,19 +150,12 @@ function page() {
   ];
 
   return (
-    <div className="p-6">
-      <div className="flex justify-between">
-        <div>
-          <h1 className="text-2xl font-bold mb-6">Department Management</h1>
-        </div>
-        <div>
-          <Button
-            icon={PlusIcon}
-            onClick={() => router.push("/department/add-department")}
-          >
-            Add Department
-          </Button>
-        </div>
+    <div className="p-6 bg-gray-100">
+      <div className="flex justify-between mb-6">
+        <h1 className="text-2xl font-bold">Department Management</h1>
+        <Button icon={PlusIcon} onClick={openAddSheet}>
+          Add Department
+        </Button>
       </div>
 
       <ReusableTable
@@ -98,8 +164,24 @@ function page() {
         loading={isLoading}
         emptyMessage="No department found"
       />
+
+     
+      <SheetDrawer
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
+        title={`${mode === "edit" ? "Edit" : "Add"} Department`}
+        size="md"
+      >
+        <AddDepartmentForm
+          register={register}
+          errors={errors}
+          onSubmit={handleSubmit(onSubmit)}
+          onCancel={() => setIsSheetOpen(false)}
+          mode={mode}
+        />
+      </SheetDrawer>
     </div>
   );
 }
 
-export default page;
+export default DepartmentPage;

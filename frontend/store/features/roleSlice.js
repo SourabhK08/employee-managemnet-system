@@ -8,10 +8,49 @@ export const roleApiSlice = rootApiSlice.injectEndpoints({
           url: `/role/`,
         };
       },
+      providesTags:['roleList']
     }),
+
+    addRole: builder.mutation({
+            query:(roleData) => ({
+                url:'/role/add',
+                body: roleData,
+                method:'POST'
+            }),
+            invalidatesTags:['roleList']
+        }),
+
+        updateRole: builder.mutation({
+            query: ({id,updatedRole}) => ({
+                url:`/role/${id}`,
+                body:updatedRole,
+                method:'PUT'
+            }),
+            invalidatesTags:['roleList']
+        }),
+        
+        getRoleById: builder.query({
+            query:(id) => ({
+                url:`/role/${id}`,
+                method:'GET'
+            })
+        }),
+
+        deleteRole: builder.mutation({
+            query: (id) => ({
+                url:`/role/${id}`,
+                method:'DELETE'
+            }),
+            invalidatesTags:['roleList']
+        })
+  
   }),
 });
 
 export const {
-    useGetRoleListQuery
+    useGetRoleListQuery,
+    useAddRoleMutation,
+    useDeleteRoleMutation,
+    useGetRoleByIdQuery,
+    useUpdateRoleMutation
 } = roleApiSlice;

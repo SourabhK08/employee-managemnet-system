@@ -3,14 +3,40 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 
+const generateAccessAndRefreshToken = async (id) => {
+  try {
+    const employee = await Employee.findById(id);
+
+    const accessToken = employee.generateAccessToken();
+    const refreshToken = employee.generateRefreshToken();
+
+    employee.refreshToken = refreshToken;
+    await employee.save({
+      validateBeforeSave: false,
+    });
+
+    return { accessToken, refreshToken };
+  } catch (error) {
+    throw new ApiError(500, "Something went wrong in genrating tokens");
+  }
+};
+
+const options = {
+  httpOnly: true,
+  secure: true,
+};
+
 const createEmployee = asyncHandler(async (req, res) => {
-  const { name, email, phone, salary, department, role } = req.body;
+  const { name, email, phone, salary, department, role, password } = req.body;
 
   if (name === "") {
     throw new ApiError(400, "Name is required");
   }
   if (email === "") {
     throw new ApiError(400, "Email is required");
+  }
+  if (password === "") {
+    throw new ApiError(400, "Password is required");
   }
   if (phone === null) {
     throw new ApiError(400, "Phone is required");
@@ -25,18 +51,28 @@ const createEmployee = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Role is required");
   }
 
+  const exsistingEmployee = await Employee.findOne({
+    email: email.toLowerCase(),
+  });
+
+  if (exsistingEmployee) {
+    throw new ApiError(400, "Email already exists, Please login!");
+  }
+
   const emp = await Employee.create({
     name: name.toLowerCase(),
-    email,
+    email: email.toLowerCase(),
+    password,
     phone,
     salary,
     department,
     role,
   });
 
-  console.log("Emp det ---", emp);
+  console.log("Emp details ---", emp);
 
   const createdEmployee = await Employee.findById(emp._id)
+    .select("-password -refreshToken")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" });
 
@@ -45,10 +81,76 @@ const createEmployee = asyncHandler(async (req, res) => {
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(
       new ApiResponse(200, createdEmployee, "Employee created successfully")
     );
+});
+
+const loginEmployee = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email) {
+    throw new ApiError(400, "Email is required");
+  }
+
+  if (!password) {
+    throw new ApiError(400, "Password is required");
+  }
+
+  const employeeFoundInDb = await Employee.findOne({
+    email,
+  });
+
+  if (!employeeFoundInDb) {
+    throw new ApiError(404, "Email does not exists");
+  }
+
+  const isPasswordValid = await employeeFoundInDb.isPasswordCorrect(password);
+
+  if (!isPasswordValid) {
+    throw new ApiError(401, "Password is incorrect");
+  }
+
+  const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
+    isPasswordValid._id
+  );
+
+  const loggedInEmployee = await Employee.findById(
+    employeeFoundInDb._id
+  ).select("-password -refreshToken");
+
+  return res
+    .status(200)
+    .cookie("accessToken", accessToken, options)
+    .cookie("refreshToken", refreshToken, options)
+    .json(
+      new ApiResponse(200, {
+        employee: loggedInEmployee,
+        refreshToken,
+        accessToken,
+      }),
+      "Employee logged in successfully"
+    );
+});
+
+const logoutEmployee = asyncHandler(async (req, res) => {
+  await Employee.findByIdAndUpdate(
+    req.employee._id,
+    {
+      $unset: {
+        refreshToken: 1,
+      },
+    },
+    {
+      new: true,
+    }
+  );
+  return res
+    .status(200)
+    .clearCookie("accessToken", options)
+    .clearCookie("refreshToken", options)
+    .json(new ApiResponse(200, {}, "Employee logged out successfully"));
 });
 
 const listEmployees = asyncHandler(async (req, res) => {
@@ -145,4 +247,6 @@ export {
   getEmployeeById,
   updateEmployee,
   deleteEmployee,
+  loginEmployee,
+  logoutEmployee
 };
