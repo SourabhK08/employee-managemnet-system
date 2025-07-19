@@ -72,7 +72,7 @@ const createEmployee = asyncHandler(async (req, res) => {
   console.log("Emp details ---", emp);
 
   const createdEmployee = await Employee.findById(emp._id)
-    .select("-password -refreshToken")
+    .select("-refreshToken")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" });
 
@@ -89,6 +89,8 @@ const createEmployee = asyncHandler(async (req, res) => {
 
 const loginEmployee = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  console.log("email--", email);
+  console.log("password--", password);
 
   if (!email) {
     throw new ApiError(400, "Email is required");
@@ -112,8 +114,10 @@ const loginEmployee = asyncHandler(async (req, res) => {
     throw new ApiError(401, "Password is incorrect");
   }
 
+  console.log("isPasswordValid", isPasswordValid);
+
   const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
-    isPasswordValid._id
+    employeeFoundInDb._id
   );
 
   const loggedInEmployee = await Employee.findById(
@@ -125,12 +129,15 @@ const loginEmployee = asyncHandler(async (req, res) => {
     .cookie("accessToken", accessToken, options)
     .cookie("refreshToken", refreshToken, options)
     .json(
-      new ApiResponse(200, {
-        employee: loggedInEmployee,
-        refreshToken,
-        accessToken,
-      }),
-      "Employee logged in successfully"
+      new ApiResponse(
+        200,
+        {
+          employee: loggedInEmployee,
+          refreshToken,
+          accessToken,
+        },
+        "Logged in successfully"
+      )
     );
 });
 
@@ -155,7 +162,7 @@ const logoutEmployee = asyncHandler(async (req, res) => {
 
 const listEmployees = asyncHandler(async (req, res) => {
   const employee = await Employee.find()
-    .select("-__v")
+    .select("-__v -password")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" });
 
@@ -197,7 +204,7 @@ const getEmployeeById = asyncHandler(async (req, res) => {
 
 const updateEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, salary, department, role } = req.body;
+  const { name, email, phone, salary, department, role, password } = req.body;
 
   const updatedEmp = await Employee.findByIdAndUpdate(
     id,
@@ -209,6 +216,7 @@ const updateEmployee = asyncHandler(async (req, res) => {
         salary,
         department,
         role,
+        password,
       },
     },
     {
@@ -248,5 +256,5 @@ export {
   updateEmployee,
   deleteEmployee,
   loginEmployee,
-  logoutEmployee
+  logoutEmployee,
 };

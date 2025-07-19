@@ -37,6 +37,7 @@ function page() {
       email: "",
       phone: null,
       salary: null,
+      password: "Asdf@123",
     },
   });
 
@@ -123,8 +124,15 @@ function page() {
             required={true}
           />
           <TextInput
+            name="password"
+            placeholder="Enter password"
+            label={"Password"}
+            register={register}
+            error={errors.password}
+            required={true}
+          />
+          <TextInput
             name="phone"
-            type="number"
             placeholder="Enter phone number"
             label={"Phone"}
             register={register}

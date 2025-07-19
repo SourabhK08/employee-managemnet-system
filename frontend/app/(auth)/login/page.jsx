@@ -17,6 +17,8 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
+import { useLoginEmployeeMutation } from "@/store/features/employeeSlice";
+import { toast } from "react-toastify";
 
 function LoginPage() {
   const router = useRouter();
@@ -33,9 +35,18 @@ function LoginPage() {
     },
   });
 
-  const onSubmit = (data) => {
+  const [login] = useLoginEmployeeMutation();
+
+  const onSubmit = async (data) => {
     console.log("Form Submitted:", data);
-    router.replace("/dashboard");
+
+    try {
+      const res = await login(data).unwrap();
+      toast.success(res.message || "Logged In Successfully");
+      router.replace("/dashboard");
+    } catch (error) {
+      toast.error(error.data.message || "Something went wrong");
+    }
   };
 
   console.log("form values", getValues(), "from err", errors);

@@ -1,13 +1,26 @@
 "use client";
-import { AlignJustify, X } from "lucide-react";
+import { useLogoutEmployeeMutation } from "@/store/features/employeeSlice";
+import { AlignJustify, LogOutIcon, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { toast } from "react-toastify";
 
 export default function Sidebar() {
   const [sidebarOpen, setsidebarOpen] = useState(true);
 
-  const pathname = usePathname()
+  const pathname = usePathname();
+
+  const [logout] = useLogoutEmployeeMutation();
+
+  const handleLogout = async () => {
+    try {
+      await logout().unwrap();
+      window.location.href = "/";
+    } catch (error) {
+      toast.error(error.data.message || "Logout failed");
+    }
+  };
 
   const navItems = [
     {
@@ -72,14 +85,17 @@ export default function Sidebar() {
           <nav>
             <ul className="space-y-2">
               {navItems.map((item, index) => {
-
                 const isActive = pathname === item.href;
 
                 return (
                   <li key={index}>
                     <Link
                       href={item.href}
-                      className={`block px-1 py-2 rounded  transition ${isActive ? 'bg-gray-700 font-semibold' : 'hover:bg-gray-700' } `}
+                      className={`block px-1 py-2 rounded  transition ${
+                        isActive
+                          ? "bg-gray-700 font-semibold"
+                          : "hover:bg-gray-700"
+                      } `}
                     >
                       {item.label}
                     </Link>
@@ -87,6 +103,16 @@ export default function Sidebar() {
                 );
               })}
             </ul>
+            <div
+              className="mt-5 flex gap-2 items-center text-red-500 cursor-pointer "
+              onClick={handleLogout}
+            >
+              <div>
+                {" "}
+                <LogOutIcon width={20} height={20} />{" "}
+              </div>
+              <button className="cursor-pointer">Logout</button>
+            </div>
           </nav>
         </aside>
       )}

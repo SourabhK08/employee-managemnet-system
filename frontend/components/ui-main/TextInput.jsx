@@ -23,6 +23,7 @@ const TextInput = ({
           type={type}
           placeholder={placeholder}
           name={name}
+          maxLength={name === "phone" ? 10 : undefined}
           className={`border p-2 w-full rounded-md ${classname} `}
           {...(register ? register(name) : {})}
         />

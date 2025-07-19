@@ -13,14 +13,14 @@ const employeeSchema = new Schema(
       type: String,
       unique: true,
       required: true,
-      lowercase:true
+      lowercase: true,
     },
     password: {
       type: String,
       required: true,
     },
-    refreshToken:{
-      type:String
+    refreshToken: {
+      type: String,
     },
     phone: {
       type: Number,
@@ -45,7 +45,6 @@ const employeeSchema = new Schema(
       ref: "Role",
       required: true,
     },
-
   },
   { timestamps: true }
 );
@@ -57,17 +56,17 @@ employeeSchema.pre("save", async function (next) {
   next();
 });
 
-employeeSchema.methods.isPasswordCorrect = async function () {
+employeeSchema.methods.isPasswordCorrect = async function (password) {
   return await bcrypt.compare(password, this.password);
 };
 
 employeeSchema.methods.generateAccessToken = function () {
-  return (
-    jwt.sign({
+  return jwt.sign(
+    {
       _id: this._id,
       name: this.name,
       email: this.email,
-    }),
+    },
     process.env.ACCESS_TOKEN_SECRET,
     {
       expiresIn: process.env.ACCESS_TOKEN_EXPIRY,
