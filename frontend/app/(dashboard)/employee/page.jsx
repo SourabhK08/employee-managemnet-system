@@ -55,6 +55,15 @@ function page() {
       render: (value) => value?.map((v) => v.name).join(", "),
     },
     {
+      Header: "Role",
+      accessor: "role",
+      render: (value) => value.name,
+    },
+    {
+      Header: "Salary",
+      accessor: "salary",
+    },
+    {
       Header: "Actions",
       accessor: "actions",
       render: (value, row) => (

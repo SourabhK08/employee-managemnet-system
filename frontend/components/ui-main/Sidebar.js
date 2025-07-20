@@ -20,7 +20,7 @@ export default function Sidebar() {
       toast.success("Logged Out Successfully");
       setTimeout(() => {
         router.push("/");
-      }, 1500);
+      }, 1200);
     } catch (error) {
       toast.error(error.data.message || "Logout failed");
     }

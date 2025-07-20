@@ -28,7 +28,15 @@ const createRole = asyncHandler(async (req, res) => {
 });
 
 const listRole = asyncHandler(async (req, res) => {
-  const roles = await Role.find().select("-__v -updatedAt -createdAt");
+  const { search } = req.query;
+
+  let query = {};
+
+  if (search) {
+    query.name = { $regex: search, $options: "i" }; // case-insensitive search
+  }
+
+  const roles = await Role.find(query).select("-__v -updatedAt -createdAt");
 
   if (!roles || roles.length === 0) {
     throw new ApiError(404, "No roles found");
