@@ -8,15 +8,16 @@ import {
   logoutEmployee,
   updateEmployee,
 } from "../controllers/employee.controller.js";
+import { verifyJWT } from "../middlewares/auth.js";
 const employeeRouter = Router();
 
-employeeRouter.route("/add").post(createEmployee);
-employeeRouter.route("/").get(listEmployees);
-employeeRouter.route("/:id").get(getEmployeeById);
-employeeRouter.route("/:id").put(updateEmployee);
-employeeRouter.route("/:id").delete(deleteEmployee);
+employeeRouter.route("/add").post(verifyJWT, createEmployee);
+employeeRouter.route("/").get(verifyJWT, listEmployees);
+employeeRouter.route("/:id").get(verifyJWT, getEmployeeById);
+employeeRouter.route("/:id").put(verifyJWT, updateEmployee);
+employeeRouter.route("/:id").delete(verifyJWT, deleteEmployee);
 
 employeeRouter.route("/login").post(loginEmployee);
-employeeRouter.route("/logout").post(logoutEmployee);
+employeeRouter.route("/logout").post(verifyJWT, logoutEmployee);
 
 export { employeeRouter };

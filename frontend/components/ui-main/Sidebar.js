@@ -2,11 +2,12 @@
 import { useLogoutEmployeeMutation } from "@/store/features/employeeSlice";
 import { AlignJustify, LogOutIcon, X } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 import { toast } from "react-toastify";
 
 export default function Sidebar() {
+  const router = useRouter();
   const [sidebarOpen, setsidebarOpen] = useState(true);
 
   const pathname = usePathname();
@@ -16,7 +17,10 @@ export default function Sidebar() {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
-      window.location.href = "/";
+      toast.success("Logged Out Successfully");
+      setTimeout(() => {
+        router.push("/");
+      }, 1500);
     } catch (error) {
       toast.error(error.data.message || "Logout failed");
     }

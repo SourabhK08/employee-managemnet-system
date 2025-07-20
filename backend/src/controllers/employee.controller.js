@@ -122,7 +122,7 @@ const loginEmployee = asyncHandler(async (req, res) => {
 
   const loggedInEmployee = await Employee.findById(
     employeeFoundInDb._id
-  ).select("-password -refreshToken");
+  ).select("-password -refreshToken -__v");
 
   return res
     .status(200)
