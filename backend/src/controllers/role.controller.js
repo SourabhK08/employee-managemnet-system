@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 
 const createRole = asyncHandler(async (req, res) => {
-  const { name, description } = req.body;
+  const { name, description,permissions=[] } = req.body;
 
   if (!name) {
     throw new ApiError(400, "Name is required");
@@ -14,6 +14,7 @@ const createRole = asyncHandler(async (req, res) => {
   const role = await Role.create({
     name: name.toLowerCase(),
     description,
+    permissions
   });
 
   const createdRole = await Role.findById(role._id);
@@ -33,7 +34,7 @@ const listRole = asyncHandler(async (req, res) => {
   let query = {};
 
   if (search) {
-    query.name = { $regex: search, $options: "i" }; // case-insensitive search
+    query.name = { $regex: search, $options: "i" }; 
   }
 
   const roles = await Role.find(query).select("-__v -updatedAt -createdAt");
@@ -64,7 +65,7 @@ const getRoleById = asyncHandler(async (req, res) => {
 
 const updateRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, description } = req.body;
+  const { name, description,permissions=[] } = req.body;
 
   const updatedRole = await Role.findByIdAndUpdate(
     id,
@@ -72,6 +73,7 @@ const updateRole = asyncHandler(async (req, res) => {
       $set: {
         name,
         description,
+        permissions
       },
     },
     {

@@ -27,10 +27,14 @@ const options = {
 };
 
 const createEmployee = asyncHandler(async (req, res) => {
-  const { name, email, phone, salary, department, role, password } = req.body;
+  const { name, email, phone, salary, department, role, password,gender } = req.body;
 
   if (name === "") {
     throw new ApiError(400, "Name is required");
+  }
+
+  if (gender === "") {
+    throw new ApiError(400, "Gender is required");
   }
   if (email === "") {
     throw new ApiError(400, "Email is required");
@@ -67,6 +71,7 @@ const createEmployee = asyncHandler(async (req, res) => {
     salary,
     department,
     role,
+    gender
   });
 
   console.log("Emp details ---", emp);
@@ -187,7 +192,7 @@ const getEmployeeById = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
   const fetchedEmp = await Employee.findById(id)
-    .select("-__v")
+    .select("-__v -password -refreshToken")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" });
 
@@ -204,7 +209,7 @@ const getEmployeeById = asyncHandler(async (req, res) => {
 
 const updateEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, salary, department, role, password } = req.body;
+  const { name, email, phone, salary, department, role, password,gender } = req.body;
 
   const updatedEmp = await Employee.findByIdAndUpdate(
     id,
@@ -217,6 +222,7 @@ const updateEmployee = asyncHandler(async (req, res) => {
         department,
         role,
         password,
+        gender
       },
     },
     {

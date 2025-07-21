@@ -8,6 +8,7 @@ import { useGetDepartmentListQuery } from "@/store/features/departmentSlice";
 import {
   useAddEmployeeMutation,
   useGetEmployeeByIdQuery,
+  useGetEnumListQuery,
   useUpdateEmployeeMutation,
 } from "@/store/features/employeeSlice";
 import { useGetRoleListQuery } from "@/store/features/roleSlice";
@@ -41,7 +42,11 @@ function page() {
     },
   });
 
-  const { data: roleList } = useGetRoleListQuery();
+  const {data: enumData} = useGetEnumListQuery()
+
+  console.log("enumData",enumData);
+  
+  const { data: roleList } = useGetRoleListQuery({});
 
   console.log("roleList", roleList);
 
@@ -114,6 +119,26 @@ function page() {
             register={register}
             error={errors.name}
             required={true}
+          />
+          <Controller
+            name="gender"
+            control={control}
+            render={({ field }) => (
+              <SelectInput
+                label={"Gender"}
+                options={
+                 Object.entries(enumData?.data?.gender || {}).map(([id,label]) => ({
+                  id,
+                  label
+                 })) || []
+                }
+                value={field.value}
+                onChange={field.onChange}
+                required={true}
+                placeholder="Select Gender"
+                error={errors.gender}
+              />
+            )}
           />
           <TextInput
             name="email"

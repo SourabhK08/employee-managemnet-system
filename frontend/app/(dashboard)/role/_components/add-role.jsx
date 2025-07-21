@@ -2,8 +2,10 @@
 import React from "react";
 import TextInput from "@/components/ui-main/TextInput";
 import { Button } from "@/components/ui/button";
+import { useGetPermissionListQuery } from "@/store/features/permissionSlice";
 
 export default function AddRoleForm({ register, errors, onSubmit, onCancel, mode }) {
+  const {data:permissionList} = useGetPermissionListQuery()
   return (
     <form onSubmit={onSubmit} className="space-y-4">
       <TextInput

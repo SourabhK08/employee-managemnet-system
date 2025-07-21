@@ -56,6 +56,12 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
         method: "POST",
       }),
     }),
+
+    getEnumList: builder.query({
+      query: () => ({
+        url:'/enums'
+      })
+    })
   }),
 });
 
@@ -67,4 +73,5 @@ export const {
   useUpdateEmployeeMutation,
   useLoginEmployeeMutation,
   useLogoutEmployeeMutation,
+useGetEnumListQuery
 } = employeeApiSlice;

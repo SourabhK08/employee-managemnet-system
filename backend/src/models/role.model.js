@@ -10,6 +10,10 @@ const roleSchema = new Schema(
     description: {
       type: String,
     },
+    permissions: {
+      type: [String], 
+      default: [],
+    },
   },
   { timestamps: true }
 );

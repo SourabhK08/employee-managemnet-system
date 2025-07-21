@@ -3,6 +3,7 @@ import * as yup from "yup";
 const employeeSchema = yup.object().shape({
   email: yup.string().email("Invalid email").required(),
   name: yup.string().required(),
+  gender: yup.string().required(),
   role: yup.string().required(),
   department: yup.array().required(),
   phone: yup
