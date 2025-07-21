@@ -3,9 +3,14 @@ import rootApiSlice from "../rootApiSlice";
 export const employeeApiSlice = rootApiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getEmployeeList: builder.query({
-      query: () => ({
-        url: "/employee/",
-      }),
+      query: ({ search }) => {
+        const params = new URLSearchParams();
+
+        if (search) params.append("search", search);
+        return {
+          url: `/employee?${params.toString()}`,
+        };
+      },
       providesTags: ["empList"],
     }),
 
@@ -59,9 +64,9 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
 
     getEnumList: builder.query({
       query: () => ({
-        url:'/enums'
-      })
-    })
+        url: "/enums",
+      }),
+    }),
   }),
 });
 
@@ -73,5 +78,5 @@ export const {
   useUpdateEmployeeMutation,
   useLoginEmployeeMutation,
   useLogoutEmployeeMutation,
-useGetEnumListQuery
+  useGetEnumListQuery,
 } = employeeApiSlice;

@@ -22,22 +22,23 @@ import {
 import AddDepartmentForm from "./_components/add-department";
 
 function DepartmentPage() {
+  const [searchTerm, setsearchTerm] = useState("");
   const {
     data: departmentList,
     isLoading,
     refetch,
-  } = useGetDepartmentListQuery();
+  } = useGetDepartmentListQuery({
+    search: searchTerm,
+  });
   const [addDepartment] = useAddDepartmentMutation();
   const [updateDepartment] = useUpdateDepartmentMutation();
   const [deleteDepartment] = useDeleteDepartmentMutation();
 
   const deptData = departmentList?.data?.dept;
 
- 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [mode, setMode] = useState("add");
   const [selectedDept, setSelectedDept] = useState(null);
-
 
   const {
     register,
@@ -139,7 +140,7 @@ function DepartmentPage() {
             Edit
           </Button>
           <Button
-           className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+            className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
             onClick={() => handleDelete(row._id)}
           >
             Delete
@@ -162,10 +163,12 @@ function DepartmentPage() {
         columns={columns}
         data={deptData}
         loading={isLoading}
-        emptyMessage="No department found"
+        emptyMessage={departmentList?.message || "No department found"}
+        searchBarPlaceholder="Search by name or description"
+        searchValue={searchTerm}
+        onSearchChange={(val) => setsearchTerm(val)}
       />
 
-     
       <SheetDrawer
         isOpen={isSheetOpen}
         onClose={() => setIsSheetOpen(false)}

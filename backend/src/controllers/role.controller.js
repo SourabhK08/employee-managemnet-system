@@ -5,7 +5,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
 
 const createRole = asyncHandler(async (req, res) => {
-  const { name, description,permissions=[] } = req.body;
+  const { name, description, permissions = [] } = req.body;
 
   if (!name) {
     throw new ApiError(400, "Name is required");
@@ -14,7 +14,7 @@ const createRole = asyncHandler(async (req, res) => {
   const role = await Role.create({
     name: name.toLowerCase(),
     description,
-    permissions
+    permissions,
   });
 
   const createdRole = await Role.findById(role._id);
@@ -34,19 +34,21 @@ const listRole = asyncHandler(async (req, res) => {
   let query = {};
 
   if (search) {
-    query.name = { $regex: search, $options: "i" }; 
+    query.name = { $regex: search, $options: "i" };
   }
 
   const roles = await Role.find(query).select("-__v -updatedAt -createdAt");
 
-  if (!roles || roles.length === 0) {
-    throw new ApiError(404, "No roles found");
-  }
-
   const count = roles.length;
-  return res
-    .status(200)
-    .json(new ApiResponse(200, { count, roles }, "Roles fetched successfully"));
+
+  const message =
+    count === 0
+      ? search
+        ? `No matching roles found for the keyword "${search}"`
+        : "No roles available"
+      : "Roles fetched successfully";
+
+  return res.status(200).json(new ApiResponse(200, { count, roles }, message));
 });
 
 const getRoleById = asyncHandler(async (req, res) => {
@@ -65,7 +67,7 @@ const getRoleById = asyncHandler(async (req, res) => {
 
 const updateRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, description,permissions=[] } = req.body;
+  const { name, description, permissions = [] } = req.body;
 
   const updatedRole = await Role.findByIdAndUpdate(
     id,
@@ -73,7 +75,7 @@ const updateRole = asyncHandler(async (req, res) => {
       $set: {
         name,
         description,
-        permissions
+        permissions,
       },
     },
     {

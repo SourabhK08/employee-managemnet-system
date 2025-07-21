@@ -7,12 +7,15 @@ import {
 } from "@/store/features/employeeSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React from "react";
+import React, { useState } from "react";
 import { toast } from "react-toastify";
 
 function page() {
   const router = useRouter();
-  const { data: employeeList, isLoading } = useGetEmployeeListQuery();
+  const [searchTerm, setsearchTerm] = useState("");
+  const { data: employeeList, isLoading } = useGetEmployeeListQuery({
+    search: searchTerm,
+  });
   const [deleteEmployee] = useDeleteEmployeeMutation();
 
   const employeeData = employeeList?.data?.employee;
@@ -88,7 +91,7 @@ function page() {
   ];
 
   return (
-    <div className="p-6">
+    <div className="p-6 bg-gray-100">
       <div className="flex justify-between">
         <div>
           <h1 className="text-2xl font-bold mb-6">Employee Management</h1>
@@ -107,7 +110,10 @@ function page() {
         columns={columns}
         data={employeeData}
         loading={isLoading}
-        emptyMessage="No employees found"
+        emptyMessage={employeeList?.message || "No employees found"}
+        searchBarPlaceholder="Search by name or email"
+        searchValue={searchTerm}
+        onSearchChange={(val) => setsearchTerm(val)}
       />
     </div>
   );

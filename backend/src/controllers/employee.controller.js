@@ -27,7 +27,8 @@ const options = {
 };
 
 const createEmployee = asyncHandler(async (req, res) => {
-  const { name, email, phone, salary, department, role, password,gender } = req.body;
+  const { name, email, phone, salary, department, role, password, gender } =
+    req.body;
 
   if (name === "") {
     throw new ApiError(400, "Name is required");
@@ -71,7 +72,7 @@ const createEmployee = asyncHandler(async (req, res) => {
     salary,
     department,
     role,
-    gender
+    gender,
   });
 
   console.log("Emp details ---", emp);
@@ -166,26 +167,33 @@ const logoutEmployee = asyncHandler(async (req, res) => {
 });
 
 const listEmployees = asyncHandler(async (req, res) => {
-  const employee = await Employee.find()
+  const { search } = req.query;
+
+  const query = {};
+
+  if (search) {
+    query.$or = [
+      { name: { $regex: search, $options: "i" } },
+      { email: { $regex: search, $options: "i" } },
+    ];
+  }
+
+  const employee = await Employee.find(query)
     .select("-__v -password")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" });
 
-  if (!employee) {
-    throw new ApiError(500, "Employee list not fetched");
-  }
-
   const count = employee.length;
 
+  const message =
+    count === 0
+      ? search
+        ? `No matching employees found for the keyword "${search}"`
+        : "Employee list not fetched"
+      : "Employee list fetched successfully";
   return res
     .status(200)
-    .json(
-      new ApiResponse(
-        200,
-        { count, employee },
-        "Employee list fetched successfully"
-      )
-    );
+    .json(new ApiResponse(200, { count, employee }, message));
 });
 
 const getEmployeeById = asyncHandler(async (req, res) => {
@@ -209,7 +217,8 @@ const getEmployeeById = asyncHandler(async (req, res) => {
 
 const updateEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, salary, department, role, password,gender } = req.body;
+  const { name, email, phone, salary, department, role, password, gender } =
+    req.body;
 
   const updatedEmp = await Employee.findByIdAndUpdate(
     id,
@@ -222,7 +231,7 @@ const updateEmployee = asyncHandler(async (req, res) => {
         department,
         role,
         password,
-        gender
+        gender,
       },
     },
     {

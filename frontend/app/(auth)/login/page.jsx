@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import {
   Card,
   CardAction,
@@ -19,8 +19,10 @@ import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
 import { useLoginEmployeeMutation } from "@/store/features/employeeSlice";
 import { toast } from "react-toastify";
+import { Eye, EyeOff } from "lucide-react";
 
 function LoginPage() {
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
   const {
     register,
@@ -94,11 +96,25 @@ function LoginPage() {
                     Forgot your password?
                   </a>
                 </div>
-                <Input
-                  id="password"
-                  type="password"
-                  {...register("password")}
-                />
+                <div className="flex relative">
+                  <Input
+                    id="password"
+                    type={isPasswordVisible ? "text" : "password"}
+                    {...register("password")}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsPasswordVisible(!isPasswordVisible)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500"
+                  >
+                    {isPasswordVisible ? (
+                      <EyeOff size={18} />
+                    ) : (
+                      <Eye size={18} />
+                    )}
+                  </button>
+                </div>
+
                 {errors.password && (
                   <p className="text-red-500 text-sm">
                     {errors.password.message}
