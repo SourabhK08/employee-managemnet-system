@@ -50,7 +50,7 @@ function page() {
 
   console.log("roleList", roleList);
 
-  const { data: departmentList } = useGetDepartmentListQuery();
+  const { data: departmentList } = useGetDepartmentListQuery({});
 
   console.log("departmentList", departmentList);
 

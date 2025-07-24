@@ -60,7 +60,7 @@ function page() {
     {
       Header: "Role",
       accessor: "role",
-      render: (value) => value.name,
+      render: (value) => value?.name || '---',
     },
     {
       Header: "Salary",

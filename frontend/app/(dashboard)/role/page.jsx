@@ -2,7 +2,10 @@
 import SheetDrawer from "@/components/ui-main/Sheet";
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
-import { useGetRoleListQuery } from "@/store/features/roleSlice";
+import {
+  useDeleteRoleMutation,
+  useGetRoleListQuery,
+} from "@/store/features/roleSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useState } from "react";
@@ -16,6 +19,8 @@ function page() {
     search: searchTerm,
   });
 
+  const [deleteRole] = useDeleteRoleMutation();
+
   const roleData = roleList?.data?.roles || [];
 
   console.log("rolelist", roleList);
@@ -24,7 +29,7 @@ function page() {
     console.log("selected id", id);
 
     try {
-      const res = await deleteEmployee(id).unwrap();
+      const res = await deleteRole(id).unwrap();
       console.log("del res ---", res);
 
       if (res.success) {
