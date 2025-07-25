@@ -67,6 +67,12 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
         url: "/enums",
       }),
     }),
+
+    getProfile: builder.query({
+      query: () => ({
+        url: "/employee/profile",
+      }),
+    }),
   }),
 });
 
@@ -79,4 +85,5 @@ export const {
   useLoginEmployeeMutation,
   useLogoutEmployeeMutation,
   useGetEnumListQuery,
+  useGetProfileQuery,
 } = employeeApiSlice;

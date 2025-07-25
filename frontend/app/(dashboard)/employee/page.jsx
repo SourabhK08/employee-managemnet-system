@@ -1,6 +1,7 @@
 "use client";
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
+import usePermission from "@/hooks/useCheckPermission";
 import {
   useDeleteEmployeeMutation,
   useGetEmployeeListQuery,
@@ -12,6 +13,11 @@ import { toast } from "react-toastify";
 
 function page() {
   const router = useRouter();
+  const canAddEmployee = usePermission("ADD_EMPLOYEE");
+  const canListEmployee = usePermission("LIST_EMPLOYEE");
+  const canEditEmployee = usePermission("UPDATE_EMPLOYEE");
+  const canDeleteEmployee = usePermission("DELETE_EMPLOYEE");
+
   const [searchTerm, setsearchTerm] = useState("");
   const { data: employeeList, isLoading } = useGetEmployeeListQuery({
     search: searchTerm,
@@ -60,35 +66,42 @@ function page() {
     {
       Header: "Role",
       accessor: "role",
-      render: (value) => value?.name || '---',
+      render: (value) => value?.name || "---",
     },
     {
       Header: "Salary",
       accessor: "salary",
     },
-    {
+  ];
+
+  if (canEditEmployee || canDeleteEmployee) {
+    columns.push({
       Header: "Actions",
       accessor: "actions",
       render: (value, row) => (
         <div className="flex gap-2">
-          <Button
-            className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
-            onClick={() =>
-              router.push(`/employee/add-employee?id=${row._id}&mode=edit`)
-            }
-          >
-            Edit
-          </Button>
-          <Button
-            className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
-            onClick={() => handleDelete(row?._id)}
-          >
-            Delete
-          </Button>
+          {canEditEmployee && (
+            <Button
+              className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
+              onClick={() =>
+                router.push(`/employee/add-employee?id=${row._id}&mode=edit`)
+              }
+            >
+              Edit
+            </Button>
+          )}
+          {canDeleteEmployee && (
+            <Button
+              className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
+              onClick={() => handleDelete(row?._id)}
+            >
+              Delete
+            </Button>
+          )}
         </div>
       ),
-    },
-  ];
+    });
+  }
 
   return (
     <div className="p-6 bg-gray-100">
@@ -96,25 +109,29 @@ function page() {
         <div>
           <h1 className="text-2xl font-bold mb-6">Employee Management</h1>
         </div>
-        <div>
-          <Button
-            icon={PlusIcon}
-            onClick={() => router.push("/employee/add-employee")}
-          >
-            Add Employee
-          </Button>
-        </div>
+        {canAddEmployee && (
+          <div>
+            <Button
+              icon={PlusIcon}
+              onClick={() => router.push("/employee/add-employee")}
+            >
+              Add Employee
+            </Button>
+          </div>
+        )}
       </div>
 
-      <ReusableTable
-        columns={columns}
-        data={employeeData}
-        loading={isLoading}
-        emptyMessage={employeeList?.message || "No employees found"}
-        searchBarPlaceholder="Search by name or email"
-        searchValue={searchTerm}
-        onSearchChange={(val) => setsearchTerm(val)}
-      />
+      {canListEmployee && (
+        <ReusableTable
+          columns={columns}
+          data={employeeData}
+          loading={isLoading}
+          emptyMessage={employeeList?.message || "No employees found"}
+          searchBarPlaceholder="Search by name or email"
+          searchValue={searchTerm}
+          onSearchChange={(val) => setsearchTerm(val)}
+        />
+      )}
     </div>
   );
 }

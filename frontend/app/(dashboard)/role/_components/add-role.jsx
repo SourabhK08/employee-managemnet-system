@@ -21,7 +21,6 @@ import {
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
 
-// 🧠 Utility to group permissions by module
 const groupByModule = (permissions) => {
   const grouped = {};
   permissions.forEach((perm) => {
@@ -135,22 +134,22 @@ export default function AddRoleForm() {
         />
       </div>
 
-      {/* 🔥 Permission Accordion */}
       <div className="mt-6">
         <h2 className="font-semibold text-lg mb-2">Permissions</h2>
         <Accordion type="multiple" className="w-full">
           {Object.entries(groupedPermissions).map(([module, perms]) => (
-            <AccordionItem key={module} value={module}>
-              <AccordionTrigger>
+            <AccordionItem key={module} value={module} className={`mb-3`}>
+              <AccordionTrigger className={` p-2 `}>
                 {module.replace(/_/g, " ").toUpperCase()}
               </AccordionTrigger>
               <AccordionContent>
-                <div className="flex flex-col gap-2 pl-4">
+                <div className="flex flex-wrap gap-4 pl-2 mt-2">
                   {perms.map((perm) => (
                     <label key={perm.key} className="flex items-center gap-2">
                       <Checkbox
                         checked={selectedPermissions.includes(perm.key)}
                         onCheckedChange={() => handleTogglePermission(perm.key)}
+                        className={`cursor-pointer`}
                       />
                       <span className="capitalize">
                         {perm.value.replace(/-/g, " ")}
