@@ -20,6 +20,7 @@ import {
   AccordionContent,
 } from "@/components/ui/accordion";
 import { Checkbox } from "@/components/ui/checkbox";
+import { hasPermission } from "@/components/ui-main/hasPermission";
 
 const groupByModule = (permissions) => {
   const grouped = {};
@@ -35,7 +36,14 @@ const groupByModule = (permissions) => {
 };
 
 export default function AddRoleForm() {
+  const hasAddRolePermisssion = hasPermission("ADD_ROLE");
+
   const router = useRouter();
+  useEffect(() => {
+    if (!hasAddRolePermisssion) {
+      router.push("/dashboard");
+    }
+  }, []);
   const [addRole] = useAddRoleMutation();
   const [updateRole] = useUpdateRoleMutation();
 

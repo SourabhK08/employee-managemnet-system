@@ -121,7 +121,7 @@ function page() {
         )}
       </div>
 
-      {canListEmployee && (
+      {canListEmployee ? (
         <ReusableTable
           columns={columns}
           data={employeeData}
@@ -131,6 +131,10 @@ function page() {
           searchValue={searchTerm}
           onSearchChange={(val) => setsearchTerm(val)}
         />
+      ) : (
+        <section>
+          <div>You don't have permission to view this</div>
+        </section>
       )}
     </div>
   );

@@ -17,9 +17,18 @@ import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
 import { Controller, useForm } from "react-hook-form";
 import { toast } from "react-toastify";
+import usePermission from "@/hooks/useCheckPermission";
 
 function page() {
   const router = useRouter();
+  const hasAddPermission = usePermission("ADD_EMPLOYEE");
+
+  useEffect(() => {
+    if (!hasAddPermission) {
+      router.push("/dashboard");
+    }
+  }, []);
+
   const searchParams = useSearchParams();
   const {
     register,
@@ -42,10 +51,10 @@ function page() {
     },
   });
 
-  const {data: enumData} = useGetEnumListQuery()
+  const { data: enumData } = useGetEnumListQuery();
 
-  console.log("enumData",enumData);
-  
+  console.log("enumData", enumData);
+
   const { data: roleList } = useGetRoleListQuery({});
 
   console.log("roleList", roleList);
@@ -127,10 +136,12 @@ function page() {
               <SelectInput
                 label={"Gender"}
                 options={
-                 Object.entries(enumData?.data?.gender || {}).map(([id,label]) => ({
-                  id,
-                  label
-                 })) || []
+                  Object.entries(enumData?.data?.gender || {}).map(
+                    ([id, label]) => ({
+                      id,
+                      label,
+                    })
+                  ) || []
                 }
                 value={field.value}
                 onChange={field.onChange}
