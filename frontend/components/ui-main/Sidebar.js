@@ -1,4 +1,5 @@
 "use client";
+import usePermission from "@/hooks/useCheckPermission";
 import { useLogoutEmployeeMutation } from "@/store/features/employeeSlice";
 import { AlignJustify, LogOutIcon, X } from "lucide-react";
 import Link from "next/link";
@@ -26,48 +27,58 @@ export default function Sidebar() {
     }
   };
 
+  const canViewEmployee = usePermission("LIST_EMPLOYEE");
+  const canViewDepartment = usePermission("LIST_DEPARTMENT");
+  const canViewRole = usePermission("LIST_ROLE");
+  const canViewTask = usePermission("VIEW_TASK");
+  const canViewAttendance = usePermission("VIEW_ATTENDANCE");
+  const canViewPayroll = usePermission("VIEW_PAYROLL");
+  const canViewLeave = usePermission("VIEW_LEAVE");
+
   const navItems = [
     {
       label: "Dashboard",
       href: "/dashboard",
-      // permission: "view_employee",
+      show: true,
     },
     {
       label: "Employee",
       href: "/employee",
-      // permission: "view_employee",
+      show: canViewEmployee,
     },
     {
       label: "Department",
       href: "/department",
-      // permission: "view_department",
+      show: canViewDepartment,
     },
     {
       label: "Role",
       href: "/role",
-      // permission: "view_department",
+      show: canViewRole,
     },
     {
       label: "Assign Task",
       href: "/dashboard/settings",
-      // permission: "assign_task",
+      show: canViewTask,
     },
     {
       label: "Attendance",
       href: "/dashboard/settings",
-      // permission: "view_attendance",
+      show: canViewAttendance,
     },
     {
       label: "Leave",
       href: "/dashboard/settings",
-      // permission: "manage_leave",
+      show: canViewLeave,
     },
     {
       label: "Payroll",
       href: "/dashboard/settings",
-      // permission: "view_payroll",
+      show: canViewPayroll,
     },
   ];
+
+  const visibleNavItems = navItems.filter((item) => item.show);
 
   return (
     <>
@@ -85,10 +96,9 @@ export default function Sidebar() {
             />
           </div>
 
-          {/* check permissions here (UserPermissions from api) == (given permission here) */}
           <nav>
             <ul className="space-y-2">
-              {navItems.map((item, index) => {
+              {visibleNavItems.map((item, index) => {
                 const isActive = pathname === item.href;
 
                 return (

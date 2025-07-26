@@ -17,11 +17,17 @@ import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
 import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
-import { useLoginEmployeeMutation } from "@/store/features/employeeSlice";
+import {
+  useGetProfileQuery,
+  useLoginEmployeeMutation,
+} from "@/store/features/employeeSlice";
 import { toast } from "react-toastify";
 import { Eye, EyeOff } from "lucide-react";
+import { useDispatch } from "react-redux";
+import { setUserProfile } from "@/store/userSlice";
 
 function LoginPage() {
+  const dispatch = useDispatch();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const router = useRouter();
   const {
@@ -38,6 +44,7 @@ function LoginPage() {
   });
 
   const [login] = useLoginEmployeeMutation();
+  const { triggerGetProfile } = useGetProfileQuery();
 
   const onSubmit = async (data) => {
     console.log("Form Submitted:", data);
@@ -45,6 +52,10 @@ function LoginPage() {
     try {
       const res = await login(data).unwrap();
       toast.success(res.message || "Logged In Successfully");
+
+      const profileRes = await triggerGetProfile().unwrap();
+      dispatch(setUserProfile(profileRes));
+
       router.replace("/dashboard");
     } catch (error) {
       toast.error(error.data.message || "Something went wrong");

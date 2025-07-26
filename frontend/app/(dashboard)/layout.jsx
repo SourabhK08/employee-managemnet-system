@@ -2,7 +2,10 @@
 "use client";
 import Sidebar from "@/components/ui-main/Sidebar";
 import useAuth from "@/hooks/useAuth";
-import { useGetProfileQuery } from "@/store/features/employeeSlice";
+import {
+  useGetProfileQuery,
+  useLazyGetProfileQuery,
+} from "@/store/features/employeeSlice";
 import { setUserProfile } from "@/store/userSlice";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
@@ -11,7 +14,7 @@ import { useDispatch } from "react-redux";
 export default function DashboardLayout({ children }) {
   // Normally auth check backend se hota, but yahan simulate kar rahe
   // const { employee } = useAuth();
-  // const router = useRouter();
+  const router = useRouter();
 
   // useEffect(() => {
   //   if (!employee) {
@@ -28,13 +31,19 @@ export default function DashboardLayout({ children }) {
   // if (!employee) return null;
 
   const dispatch = useDispatch();
-  const { data, isSuccess } = useGetProfileQuery();
+  const { data, isSuccess, error } = useGetProfileQuery();
 
   useEffect(() => {
     if (isSuccess && data) {
       dispatch(setUserProfile(data));
     }
-  }, [isSuccess, data, dispatch]);
+  }, [isSuccess, data]);
+
+  useEffect(() => {
+    if (error && error.status === 401) {
+      router.replace("/");
+    }
+  }, [error, router]);
 
   return (
     <div className="flex">
