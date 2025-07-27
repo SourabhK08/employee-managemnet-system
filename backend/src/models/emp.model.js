@@ -49,6 +49,10 @@ const employeeSchema = new Schema(
       ref: "Role",
       required: true,
     },
+    teamLeader: {
+      type: Schema.Types.ObjectId,
+      ref: "Employee",
+    },
   },
   { timestamps: true }
 );

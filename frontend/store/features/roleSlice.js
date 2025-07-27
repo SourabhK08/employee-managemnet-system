@@ -46,6 +46,12 @@ export const roleApiSlice = rootApiSlice.injectEndpoints({
       }),
       invalidatesTags: ["roleList"],
     }),
+
+    getTeamLeadersList: builder.query({
+      query: () => ({
+        url: "/role/teamLeadersList",
+      }),
+    }),
   }),
 });
 
@@ -55,4 +61,5 @@ export const {
   useDeleteRoleMutation,
   useGetRoleByIdQuery,
   useUpdateRoleMutation,
+  useGetTeamLeadersListQuery,
 } = roleApiSlice;

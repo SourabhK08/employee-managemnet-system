@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Card,
   CardAction,
@@ -18,7 +18,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import loginSchema from "@/schema/loginSchema";
 import { useRouter } from "next/navigation";
 import {
-  useGetProfileQuery,
+  useLazyGetProfileQuery,
   useLoginEmployeeMutation,
 } from "@/store/features/employeeSlice";
 import { toast } from "react-toastify";
@@ -29,12 +29,14 @@ import { setUserProfile } from "@/store/userSlice";
 function LoginPage() {
   const dispatch = useDispatch();
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const {
     register,
     handleSubmit,
     formState: { errors },
     getValues,
+    reset,
   } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: {
@@ -44,25 +46,45 @@ function LoginPage() {
   });
 
   const [login] = useLoginEmployeeMutation();
-  const { triggerGetProfile } = useGetProfileQuery();
+  const [getProfile] = useLazyGetProfileQuery();
 
   const onSubmit = async (data) => {
     console.log("Form Submitted:", data);
+    setIsLoading(true);
 
     try {
-      const res = await login(data).unwrap();
-      toast.success(res.message || "Logged In Successfully");
+      const loginRes = await login(data).unwrap();
 
-      const profileRes = await triggerGetProfile().unwrap();
-      dispatch(setUserProfile(profileRes));
+      if (loginRes.success) {
+        toast.success(loginRes.message || "Logged In Successfully");
+        const profileRes = await getProfile().unwrap();
 
-      router.replace("/dashboard");
+        if (profileRes.success) {
+          dispatch(setUserProfile(profileRes));
+          localStorage.setItem("userProfile", JSON.stringify(profileRes));
+          localStorage.setItem("isAuthenticated", "true");
+
+          reset();
+          router.replace("/dashboard");
+        } else {
+          throw new Error(profileRes.message || "Failed to fetch profile");
+        }
+      } else {
+        throw new Error(loginRes.message || "Login failed");
+      }
     } catch (error) {
-      toast.error(error.data.message || "Something went wrong");
+      console.log("err0r", error);
+
+      toast.error(error?.data?.message || "Something went wrong");
+
+      localStorage.removeItem("userProfile");
+      localStorage.removeItem("isAuthenticated");
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  console.log("form values", getValues(), "from err", errors);
+  // console.log("form values", getValues(), "from err", errors);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-bl from-blue-500 via-purple-500 to-pink-500  p-4">

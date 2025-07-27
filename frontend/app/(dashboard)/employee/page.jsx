@@ -133,7 +133,7 @@ function page() {
         />
       ) : (
         <section>
-          <div>You don't have permission to view this</div>
+          <div>You do not have permission to view this section.</div>
         </section>
       )}
     </div>

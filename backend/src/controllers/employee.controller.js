@@ -27,8 +27,17 @@ const options = {
 };
 
 const createEmployee = asyncHandler(async (req, res) => {
-  const { name, email, phone, salary, department, role, password, gender } =
-    req.body;
+  const {
+    name,
+    email,
+    phone,
+    salary,
+    department,
+    role,
+    password,
+    gender,
+    teamLeader,
+  } = req.body;
 
   if (name === "") {
     throw new ApiError(400, "Name is required");
@@ -73,6 +82,7 @@ const createEmployee = asyncHandler(async (req, res) => {
     department,
     role,
     gender,
+    teamLeader,
   });
 
   console.log("Emp details ---", emp);
@@ -175,6 +185,7 @@ const listEmployees = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { email: { $regex: search, $options: "i" } },
+      { teamLeader: { $regex: search, $options: "i" } },
     ];
   }
 
@@ -202,7 +213,7 @@ const getEmployeeById = asyncHandler(async (req, res) => {
   const fetchedEmp = await Employee.findById(id)
     .select("-__v -password -refreshToken")
     .populate({ path: "department", select: "name description" })
-    .populate({ path: "role", select: "name description" });
+    .populate({ path: "role", select: "name description permissions" });
 
   if (!fetchedEmp) {
     throw new ApiError(500, "Employee data not fetched");
@@ -215,38 +226,104 @@ const getEmployeeById = asyncHandler(async (req, res) => {
     );
 });
 
+// const updateEmployee = asyncHandler(async (req, res) => {
+//   const { id } = req.params;
+//   const {
+//     name,
+//     email,
+//     phone,
+//     salary,
+//     department,
+//     role,
+//     password,
+//     gender,
+//     teamLeader,
+//   } = req.body;
+
+//   const updatedEmp = await Employee.findByIdAndUpdate(
+//     id,
+//     {
+//       $set: {
+//         name: name,
+//         email,
+//         phone,
+//         salary,
+//         department,
+//         role,
+//         password,
+//         gender,
+//         teamLeader,
+//       },
+//     },
+//     {
+//       new: true,
+//     }
+//   );
+
+//   if (!updatedEmp) {
+//     throw new ApiError(500, "Can not update employee");
+//   }
+
+//   return res
+//     .status(200)
+//     .json(
+//       new ApiResponse(200, updatedEmp, "Employee details updated successfully")
+//     );
+// });
+
 const updateEmployee = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { name, email, phone, salary, department, role, password, gender } =
-    req.body;
+  const {
+    name,
+    email,
+    phone,
+    salary,
+    department,
+    role,
+    password,
+    gender,
+    teamLeader,
+  } = req.body;
 
-  const updatedEmp = await Employee.findByIdAndUpdate(
-    id,
-    {
-      $set: {
-        name: name,
-        email,
-        phone,
-        salary,
-        department,
-        role,
-        password,
-        gender,
-      },
-    },
-    {
-      new: true,
-    }
-  );
+  const employee = await Employee.findById(id);
+
+  if (!employee) {
+    throw new ApiError(404, "Employee not found");
+  }
+
+  if (name) employee.name = name;
+  if (email) employee.email = email;
+  if (phone) employee.phone = phone;
+  if (salary) employee.salary = salary;
+  if (department) employee.department = department;
+  if (role) employee.role = role;
+  if (gender) employee.gender = gender;
+  if (teamLeader) employee.teamLeader = teamLeader;
+
+  if (password && password.trim() !== "") {
+    employee.password = password; // Ye pre('save') middleware trigger karega
+  }
+
+  // Save karo - ye pre('save') middleware chalayega
+  const updatedEmp = await employee.save({ validateBeforeSave: true });
 
   if (!updatedEmp) {
-    throw new ApiError(500, "Can not update employee");
+    throw new ApiError(500, "Cannot update employee");
   }
+
+  const responseData = await Employee.findById(updatedEmp._id)
+    .select("-password -refreshToken -__v")
+    .populate({ path: "department", select: "name description" })
+    .populate({ path: "role", select: "name description permissions" });
 
   return res
     .status(200)
     .json(
-      new ApiResponse(200, updatedEmp, "Employee details updated successfully")
+      new ApiResponse(
+        200,
+        responseData,
+        "Employee details updated successfully"
+      )
     );
 });
 

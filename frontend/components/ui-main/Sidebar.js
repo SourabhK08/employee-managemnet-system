@@ -1,14 +1,17 @@
 "use client";
 import usePermission from "@/hooks/useCheckPermission";
 import { useLogoutEmployeeMutation } from "@/store/features/employeeSlice";
+import { logoutUser } from "@/store/userSlice";
 import { AlignJustify, LogOutIcon, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 
 export default function Sidebar() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [sidebarOpen, setsidebarOpen] = useState(true);
 
   const pathname = usePathname();
@@ -18,12 +21,25 @@ export default function Sidebar() {
   const handleLogout = async () => {
     try {
       await logout().unwrap();
+
+      dispatch(logoutUser());
+
+      localStorage.removeItem("userProfile");
+      localStorage.removeItem("isAuthenticated");
+      localStorage.removeItem("accessToken");
+      localStorage.removeItem("refreshToken");
+
       toast.success("Logged Out Successfully");
       setTimeout(() => {
         router.push("/");
-      }, 1200);
+      }, 1000);
     } catch (error) {
       toast.error(error.data.message || "Logout failed");
+      // dispatch(logoutUser());
+      // localStorage.removeItem("userProfile");
+      // localStorage.removeItem("isAuthenticated");
+      // localStorage.removeItem("accessToken");
+      // localStorage.removeItem("refreshToken");
     }
   };
 
@@ -60,6 +76,11 @@ export default function Sidebar() {
       label: "Assign Task",
       href: "/dashboard/settings",
       show: canViewTask,
+    },
+    {
+      label: "My Tasks",
+      href: "/my-tasks",
+      show: true,
     },
     {
       label: "Attendance",

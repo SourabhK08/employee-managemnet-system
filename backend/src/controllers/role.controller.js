@@ -105,7 +105,7 @@ const updateRole = asyncHandler(async (req, res) => {
 const deleteRole = asyncHandler(async (req, res) => {
   const { id } = req.params;
 
-  const assignedEmployees = await Employee.find({ department: id });
+  const assignedEmployees = await Employee.find({ role: id });
 
   if (assignedEmployees.length > 0) {
     throw new ApiError(400, "Cannot delete role. It is assigned to employees.");
@@ -122,4 +122,31 @@ const deleteRole = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, deletedRole, "Role deleted successfully"));
 });
 
-export { createRole, listRole, getRoleById, updateRole, deleteRole };
+const teamLeaderList = asyncHandler(async (req, res) => {
+  const teamLeaderRole = await Role.findOne({
+    name: { $regex: /^tl$/i },
+  });
+
+  if (!teamLeaderRole) {
+    throw new ApiError(404, "No Team Leader role found");
+  }
+
+  const teamLeaders = await Employee.find({ role: teamLeaderRole._id })
+    .select("_id name email")
+    .populate({ path: "department", select: "name" });
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, teamLeaders, "Team leaders fetched successfully")
+    );
+});
+
+export {
+  createRole,
+  listRole,
+  getRoleById,
+  updateRole,
+  deleteRole,
+  teamLeaderList,
+};

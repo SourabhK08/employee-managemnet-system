@@ -11,7 +11,10 @@ import {
   useGetEnumListQuery,
   useUpdateEmployeeMutation,
 } from "@/store/features/employeeSlice";
-import { useGetRoleListQuery } from "@/store/features/roleSlice";
+import {
+  useGetRoleListQuery,
+  useGetTeamLeadersListQuery,
+} from "@/store/features/roleSlice";
 import { yupResolver } from "@hookform/resolvers/yup";
 import { useRouter, useSearchParams } from "next/navigation";
 import React, { useEffect } from "react";
@@ -48,6 +51,7 @@ function page() {
       phone: null,
       salary: null,
       password: "Asdf@123",
+      teamLeader: "",
     },
   });
 
@@ -73,6 +77,8 @@ function page() {
   const [updatedEmployee] = useUpdateEmployeeMutation();
 
   console.log("empdata===>>", empData);
+
+  const { data: teamLeaders } = useGetTeamLeadersListQuery();
 
   const onsubmit = async (data) => {
     console.log("form submitted data is here", data);
@@ -300,6 +306,26 @@ function page() {
                 required={true}
                 placeholder="Select Role"
                 error={errors.role}
+              />
+            )}
+          />
+          <Controller
+            name="teamLeader"
+            control={control}
+            render={({ field }) => (
+              <SelectInput
+                label={"Team Leader"}
+                options={
+                  teamLeaders?.data?.map((role) => ({
+                    id: role._id,
+                    label: role.name,
+                  })) || []
+                }
+                value={field.value}
+                onChange={field.onChange}
+                
+                placeholder="Select team leader"
+                error={errors.teamLeader}
               />
             )}
           />

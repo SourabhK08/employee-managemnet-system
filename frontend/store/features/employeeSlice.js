@@ -85,5 +85,5 @@ export const {
   useLoginEmployeeMutation,
   useLogoutEmployeeMutation,
   useGetEnumListQuery,
-  useGetProfileQuery,
+  useLazyGetProfileQuery,
 } = employeeApiSlice;

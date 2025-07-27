@@ -14,6 +14,9 @@ const employeeSchema = yup.object().shape({
     .number()
     .transform((val, originalVal) => (originalVal === "" ? undefined : val))
     .required(),
+
+  teamLeader: yup.string().optional(),
+  password: yup.string().required(),
 });
 
 export default employeeSchema;
