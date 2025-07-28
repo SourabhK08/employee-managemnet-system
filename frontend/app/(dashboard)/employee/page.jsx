@@ -24,7 +24,7 @@ function page() {
   });
   const [deleteEmployee] = useDeleteEmployeeMutation();
 
-  const employeeData = employeeList?.data?.employee;
+  const employeeData = employeeList?.data?.employees;
 
   const handleDelete = async (id) => {
     console.log("selected id", id);

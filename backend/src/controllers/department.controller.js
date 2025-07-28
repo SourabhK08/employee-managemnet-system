@@ -30,7 +30,12 @@ const createDepartment = asyncHandler(async (req, res) => {
 });
 
 const listDepartment = asyncHandler(async (req, res) => {
-  const { search } = req.query;
+  const { search, page = 1, limit = 2 } = req.query;
+
+  const pageNum = parseInt(page, 10);
+  const limitNum = parseInt(limit, 10);
+
+  const skip = (pageNum - 1) * limitNum;
 
   const query = {};
 
@@ -41,18 +46,34 @@ const listDepartment = asyncHandler(async (req, res) => {
     ];
   }
 
-  const dept = await Department.find(query).select("-__v");
+  const totalDepartments = await Department.countDocuments(query);
 
-  const count = dept.length;
+  const departments = await Department.find(query)
+    .select("-__v")
+    .skip(skip)
+    .limit(limitNum);
+
+    const totalPages = Math.ceil(totalDepartments/limitNum);
+    const hasNextPage = pageNum < totalPages;
+    const hasPrevPage = pageNum > 1
+
+    const paginationInfo = {
+      currentPage:pageNum,
+      totalPages,
+      totalDepartments,
+      hasNextPage,
+      hasPrevPage,
+      limit:limitNum
+    }
 
   const message =
-    count === 0
+    totalDepartments === 0
       ? search
         ? `No matching departments found for the keyword "${search}"`
-        : "Department list not fetched"
+        : "No departments found"
       : "Department list fetched successfully";
 
-  return res.status(200).json(new ApiResponse(200, { count, dept }, message));
+  return res.status(200).json(new ApiResponse(200, { departments,paginationInfo }, message));
 });
 
 const getDepartmentById = asyncHandler(async (req, res) => {

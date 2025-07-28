@@ -177,7 +177,12 @@ const logoutEmployee = asyncHandler(async (req, res) => {
 });
 
 const listEmployees = asyncHandler(async (req, res) => {
-  const { search } = req.query;
+  const { search,page=1,limit=10 } = req.query;
+
+  const pageNum = parseInt(page,10);
+  const limitNum = parseInt(limit,10)
+
+  const skip = (pageNum - 1) * limitNum
 
   const query = {};
 
@@ -185,26 +190,41 @@ const listEmployees = asyncHandler(async (req, res) => {
     query.$or = [
       { name: { $regex: search, $options: "i" } },
       { email: { $regex: search, $options: "i" } },
-      { teamLeader: { $regex: search, $options: "i" } },
     ];
   }
 
-  const employee = await Employee.find(query)
-    .select("-__v -password")
-    .populate({ path: "department", select: "name description" })
-    .populate({ path: "role", select: "name description" });
+  const totalEmployees = await Employee.countDocuments(query)
 
-  const count = employee.length;
+  const employees = await Employee.find(query)
+    .select("-__v -password -refreshToken")
+    .populate({ path: "department", select: "name description" })
+    .populate({ path: "role", select: "name description" })
+    .skip(skip)
+    .limit(limitNum)
+
+    const totalPages = Math.ceil(totalEmployees / limitNum)
+    const hasNextPage = pageNum < totalPages;
+    const hasPrevPage = pageNum > 1
+
+    const paginationInfo = {
+    currentPage: pageNum,
+    totalPages,
+    totalEmployees,
+    hasNextPage,
+    hasPrevPage,
+    limit: limitNum
+  };
 
   const message =
-    count === 0
+    totalEmployees === 0
       ? search
         ? `No matching employees found for the keyword "${search}"`
-        : "Employee list not fetched"
+        : "No employees found"
       : "Employee list fetched successfully";
+      
   return res
     .status(200)
-    .json(new ApiResponse(200, { count, employee }, message));
+    .json(new ApiResponse(200, {employees,paginationInfo }, message));
 });
 
 const getEmployeeById = asyncHandler(async (req, res) => {

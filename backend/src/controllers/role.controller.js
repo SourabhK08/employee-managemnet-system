@@ -29,7 +29,12 @@ const createRole = asyncHandler(async (req, res) => {
 });
 
 const listRole = asyncHandler(async (req, res) => {
-  const { search } = req.query;
+  const { search, page = 1, limit = 10 } = req.query;
+
+  const pageNum = parseInt(page, 10);
+  const limitNum = parseInt(limit, 10);
+
+  const skip = (pageNum - 1) * limitNum;
 
   let query = {};
 
@@ -37,18 +42,36 @@ const listRole = asyncHandler(async (req, res) => {
     query.name = { $regex: search, $options: "i" };
   }
 
-  const roles = await Role.find(query).select("-__v -updatedAt -createdAt");
+  const totalRoles = await Role.countDocuments(query);
 
-  const count = roles.length;
+  const roles = await Role.find(query)
+    .select("-__v -updatedAt -createdAt")
+    .skip(skip)
+    .limit(limitNum);
+
+  const totalPages = Math.ceil(totalRoles / limitNum);
+  const hasNextPage = pageNum < totalPages;
+  const hasPrevPage = pageNum > 1;
+
+  const paginationInfo = {
+    currentPage: pageNum,
+    totalPages,
+    totalRoles,
+    hasNextPage,
+    hasPrevPage,
+    limit: limitNum,
+  };
 
   const message =
-    count === 0
+    totalRoles === 0
       ? search
         ? `No matching roles found for the keyword "${search}"`
-        : "No roles available"
+        : "No roles found"
       : "Roles fetched successfully";
 
-  return res.status(200).json(new ApiResponse(200, { count, roles }, message));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { roles, paginationInfo }, message));
 });
 
 const getRoleById = asyncHandler(async (req, res) => {

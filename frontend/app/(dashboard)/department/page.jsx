@@ -40,7 +40,7 @@ function DepartmentPage() {
   const [updateDepartment] = useUpdateDepartmentMutation();
   const [deleteDepartment] = useDeleteDepartmentMutation();
 
-  const deptData = departmentList?.data?.dept;
+  const deptData = departmentList?.data?.departments;
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [mode, setMode] = useState("add");
