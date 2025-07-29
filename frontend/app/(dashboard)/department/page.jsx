@@ -21,6 +21,7 @@ import {
 } from "@/store/features/departmentSlice";
 import AddDepartmentForm from "./_components/add-department";
 import usePermission from "@/hooks/useCheckPermission";
+import { useDebounce } from "@/hooks/useDebounce";
 
 function DepartmentPage() {
   const canAddDept = usePermission("ADD_DEPARTMENT");
@@ -29,18 +30,28 @@ function DepartmentPage() {
   const canDeleteDept = usePermission("DELETE_DEPARTMENT");
 
   const [searchTerm, setsearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 2;
+
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
   const {
     data: departmentList,
     isLoading,
     refetch,
   } = useGetDepartmentListQuery({
-    search: searchTerm,
+    search: debouncedSearch,
+    page,
+    limit,
   });
   const [addDepartment] = useAddDepartmentMutation();
   const [updateDepartment] = useUpdateDepartmentMutation();
   const [deleteDepartment] = useDeleteDepartmentMutation();
 
   const deptData = departmentList?.data?.departments;
+
+  const totalCount = departmentList?.data?.totalCount;
+  const totalPages = Math.ceil(totalCount / limit);
 
   const [isSheetOpen, setIsSheetOpen] = useState(false);
   const [mode, setMode] = useState("add");
@@ -183,6 +194,9 @@ function DepartmentPage() {
           searchBarPlaceholder="Search by name or description"
           searchValue={searchTerm}
           onSearchChange={(val) => setsearchTerm(val)}
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
         />
       ) : (
         <section>

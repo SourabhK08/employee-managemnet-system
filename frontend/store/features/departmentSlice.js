@@ -3,8 +3,11 @@ import rootApiSlice from "../rootApiSlice";
 export const departmentApiSlice = rootApiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getDepartmentList: builder.query({
-      query: ({ search }) => {
-        const params = new URLSearchParams();
+      query: ({ search, page, limit }) => {
+        const params = new URLSearchParams({
+          page: page.toString(),
+          limit: limit.toString(),
+        });
 
         if (search) params.append("search", search);
         return {

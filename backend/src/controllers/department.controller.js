@@ -46,34 +46,22 @@ const listDepartment = asyncHandler(async (req, res) => {
     ];
   }
 
-  const totalDepartments = await Department.countDocuments(query);
+  const totalCount = await Department.countDocuments(query);
 
   const departments = await Department.find(query)
     .select("-__v")
     .skip(skip)
     .limit(limitNum);
-
-    const totalPages = Math.ceil(totalDepartments/limitNum);
-    const hasNextPage = pageNum < totalPages;
-    const hasPrevPage = pageNum > 1
-
-    const paginationInfo = {
-      currentPage:pageNum,
-      totalPages,
-      totalDepartments,
-      hasNextPage,
-      hasPrevPage,
-      limit:limitNum
-    }
+   
 
   const message =
-    totalDepartments === 0
+    totalCount === 0
       ? search
         ? `No matching departments found for the keyword "${search}"`
         : "No departments found"
       : "Department list fetched successfully";
 
-  return res.status(200).json(new ApiResponse(200, { departments,paginationInfo }, message));
+  return res.status(200).json(new ApiResponse(200, { totalCount,departments }, message));
 });
 
 const getDepartmentById = asyncHandler(async (req, res) => {

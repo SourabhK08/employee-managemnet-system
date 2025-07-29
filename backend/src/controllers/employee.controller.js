@@ -179,8 +179,8 @@ const logoutEmployee = asyncHandler(async (req, res) => {
 const listEmployees = asyncHandler(async (req, res) => {
   const { search,page=1,limit=10 } = req.query;
 
-  const pageNum = parseInt(page,10);
-  const limitNum = parseInt(limit,10)
+  const pageNum = parseInt(page);
+  const limitNum = parseInt(limit)  
 
   const skip = (pageNum - 1) * limitNum
 
@@ -193,7 +193,7 @@ const listEmployees = asyncHandler(async (req, res) => {
     ];
   }
 
-  const totalEmployees = await Employee.countDocuments(query)
+  const totalCount = await Employee.countDocuments(query)
 
   const employees = await Employee.find(query)
     .select("-__v -password -refreshToken")
@@ -202,21 +202,8 @@ const listEmployees = asyncHandler(async (req, res) => {
     .skip(skip)
     .limit(limitNum)
 
-    const totalPages = Math.ceil(totalEmployees / limitNum)
-    const hasNextPage = pageNum < totalPages;
-    const hasPrevPage = pageNum > 1
-
-    const paginationInfo = {
-    currentPage: pageNum,
-    totalPages,
-    totalEmployees,
-    hasNextPage,
-    hasPrevPage,
-    limit: limitNum
-  };
-
   const message =
-    totalEmployees === 0
+    totalCount === 0
       ? search
         ? `No matching employees found for the keyword "${search}"`
         : "No employees found"
@@ -224,7 +211,7 @@ const listEmployees = asyncHandler(async (req, res) => {
       
   return res
     .status(200)
-    .json(new ApiResponse(200, {employees,paginationInfo }, message));
+    .json(new ApiResponse(200, {totalCount,employees}, message));
 });
 
 const getEmployeeById = asyncHandler(async (req, res) => {

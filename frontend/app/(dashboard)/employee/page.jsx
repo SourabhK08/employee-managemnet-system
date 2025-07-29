@@ -2,6 +2,7 @@
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
 import usePermission from "@/hooks/useCheckPermission";
+import { useDebounce } from "@/hooks/useDebounce";
 import {
   useDeleteEmployeeMutation,
   useGetEmployeeListQuery,
@@ -19,12 +20,22 @@ function page() {
   const canDeleteEmployee = usePermission("DELETE_EMPLOYEE");
 
   const [searchTerm, setsearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 2;
+
+  const debouncedSearch = useDebounce(searchTerm, 500);
+
   const { data: employeeList, isLoading } = useGetEmployeeListQuery({
-    search: searchTerm,
+    search: debouncedSearch,
+    page,
+    limit,
   });
   const [deleteEmployee] = useDeleteEmployeeMutation();
 
   const employeeData = employeeList?.data?.employees;
+
+  const totalCount = employeeList?.data?.totalCount;
+  const totalPages = Math.ceil(totalCount / limit);
 
   const handleDelete = async (id) => {
     console.log("selected id", id);
@@ -130,6 +141,9 @@ function page() {
           searchBarPlaceholder="Search by name or email"
           searchValue={searchTerm}
           onSearchChange={(val) => setsearchTerm(val)}
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
         />
       ) : (
         <section>

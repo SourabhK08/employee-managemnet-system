@@ -8,10 +8,11 @@ import {
 } from "@/store/features/roleSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
 import usePermission from "@/hooks/useCheckPermission";
+import { useDebounce } from "@/hooks/useDebounce";
 
 function page() {
   const canAddRole = usePermission("ADD_ROLE");
@@ -20,16 +21,31 @@ function page() {
   const canDeleteRole = usePermission("DELETE_ROLE");
 
   const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 2;
+
+  const debouncedSearch = useDebounce(searchTerm,500)
+
   const router = useRouter();
   const { data: roleList, isLoading } = useGetRoleListQuery({
-    search: searchTerm,
+    search: debouncedSearch,
+    page,
+    limit,
   });
 
   const [deleteRole] = useDeleteRoleMutation();
 
   const roleData = roleList?.data?.roles || [];
 
+  const totalCount = roleList?.data?.totalCount;
+  const totalPages = Math.ceil(totalCount / limit);
+
   console.log("rolelist", roleList);
+
+  useEffect(() => {
+  setPage(1); 
+}, [debouncedSearch]);
+
 
   const handleDelete = async (id) => {
     console.log("selected id", id);
@@ -122,6 +138,9 @@ function page() {
           searchValue={searchTerm}
           searchBarPlaceholder="Search by name"
           onSearchChange={(val) => setSearchTerm(val)}
+          page={page}
+          setPage={setPage}
+          totalPages={totalPages}
         />
       ) : (
         <section>

@@ -42,28 +42,15 @@ const listRole = asyncHandler(async (req, res) => {
     query.name = { $regex: search, $options: "i" };
   }
 
-  const totalRoles = await Role.countDocuments(query);
+  const totalCount = await Role.countDocuments(query);
 
   const roles = await Role.find(query)
     .select("-__v -updatedAt -createdAt")
     .skip(skip)
     .limit(limitNum);
 
-  const totalPages = Math.ceil(totalRoles / limitNum);
-  const hasNextPage = pageNum < totalPages;
-  const hasPrevPage = pageNum > 1;
-
-  const paginationInfo = {
-    currentPage: pageNum,
-    totalPages,
-    totalRoles,
-    hasNextPage,
-    hasPrevPage,
-    limit: limitNum,
-  };
-
   const message =
-    totalRoles === 0
+    totalCount === 0
       ? search
         ? `No matching roles found for the keyword "${search}"`
         : "No roles found"
@@ -71,7 +58,7 @@ const listRole = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { roles, paginationInfo }, message));
+    .json(new ApiResponse(200, { totalCount,roles }, message));
 });
 
 const getRoleById = asyncHandler(async (req, res) => {
