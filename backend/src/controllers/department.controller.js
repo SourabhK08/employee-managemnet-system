@@ -23,9 +23,9 @@ const createDepartment = asyncHandler(async (req, res) => {
   }
 
   return res
-    .status(200)
+    .status(201)
     .json(
-      new ApiResponse(200, createdDepartment, "Department Created Successfully")
+      new ApiResponse(201, createdDepartment, "Department Created Successfully")
     );
 });
 
@@ -52,7 +52,6 @@ const listDepartment = asyncHandler(async (req, res) => {
     .select("-__v")
     .skip(skip)
     .limit(limitNum);
-   
 
   const message =
     totalCount === 0
@@ -61,7 +60,9 @@ const listDepartment = asyncHandler(async (req, res) => {
         : "No departments found"
       : "Department list fetched successfully";
 
-  return res.status(200).json(new ApiResponse(200, { totalCount,departments }, message));
+  return res
+    .status(200)
+    .json(new ApiResponse(200, { totalCount, departments }, message));
 });
 
 const getDepartmentById = asyncHandler(async (req, res) => {

@@ -24,8 +24,8 @@ const createRole = asyncHandler(async (req, res) => {
   }
 
   return res
-    .status(200)
-    .json(new ApiResponse(200, createdRole, "Role Created Successfully"));
+    .status(201)
+    .json(new ApiResponse(201, createdRole, "Role Created Successfully"));
 });
 
 const listRole = asyncHandler(async (req, res) => {
@@ -58,7 +58,7 @@ const listRole = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, { totalCount,roles }, message));
+    .json(new ApiResponse(200, { totalCount, roles }, message));
 });
 
 const getRoleById = asyncHandler(async (req, res) => {
@@ -72,7 +72,7 @@ const getRoleById = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, role, "Role fetched successfully"));
+    .json(new ApiResponse(200, role, "Role details fetched successfully"));
 });
 
 const updateRole = asyncHandler(async (req, res) => {

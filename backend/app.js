@@ -8,6 +8,7 @@ import { roleRoutes } from "./src/routes/index.js";
 import { errorHandler } from "./src/middlewares/errorHandler.js";
 import enumRouter from "./src/routes/enum.route.js";
 import { permissionRoutes } from "./src/routes/permission.route.js";
+import { taskRoutes } from "./src/routes/task.route.js";
 
 const app = express();
 
@@ -56,13 +57,14 @@ app.use((req, res, next) => {
 
 // ROUTES
 
-app.use("/api/enums",enumRouter)
+app.use("/api/enums", enumRouter);
 
-app.use('/api/permissions',permissionRoutes)
+app.use("/api/permissions", permissionRoutes);
 
 app.use("/api/employee", employeeRouter);
 app.use("/api/department", departmentRoutes);
 app.use("/api/role", roleRoutes);
+app.use("/api/task", taskRoutes);
 
 app.use(errorHandler);
 
