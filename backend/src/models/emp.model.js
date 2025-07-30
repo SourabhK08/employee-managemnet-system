@@ -2,6 +2,7 @@ import mongoose, { Schema } from "mongoose";
 
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { enums } from "../constants/enum.js";
 
 const employeeSchema = new Schema(
   {
@@ -11,6 +12,7 @@ const employeeSchema = new Schema(
     },
     gender: {
       type: String,
+      enum: Object.values(enums.gender),
       required: true,
     },
     email: {
