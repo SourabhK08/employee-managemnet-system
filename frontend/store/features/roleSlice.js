@@ -5,8 +5,8 @@ export const roleApiSlice = rootApiSlice.injectEndpoints({
     getRoleList: builder.query({
       query: ({ search, page, limit }) => {
         const params = new URLSearchParams({
-          page:page.toString(),
-          limit:limit.toString(),
+          page: page?.toString(),
+          limit: limit?.toString(),
         });
 
         if (search) params.append("search", search);

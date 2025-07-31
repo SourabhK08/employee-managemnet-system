@@ -3,6 +3,7 @@ import {
   createEmployee,
   deleteEmployee,
   getEmployeeById,
+  getSubordinatesList,
   listEmployees,
   loginEmployee,
   logoutEmployee,
@@ -15,6 +16,7 @@ const employeeRouter = Router();
 
 employeeRouter.route("/add").post(verifyJWT, createEmployee);
 employeeRouter.route("/").get(verifyJWT, listEmployees);
+employeeRouter.route("/subordinatesList").get(verifyJWT, getSubordinatesList);
 
 employeeRouter.route("/profile").get(verifyJWT, Profile);
 

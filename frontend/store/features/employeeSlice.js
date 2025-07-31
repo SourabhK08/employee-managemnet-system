@@ -5,8 +5,8 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
     getEmployeeList: builder.query({
       query: ({ search, page, limit }) => {
         const params = new URLSearchParams({
-          page: page.toString(),
-          limit: limit.toString(),
+          page: page?.toString(),
+          limit: limit?.toString(),
         });
 
         if (search) params.append("search", search);
@@ -76,6 +76,11 @@ export const employeeApiSlice = rootApiSlice.injectEndpoints({
         url: "/employee/profile",
       }),
     }),
+    getSubordinatesList: builder.query({
+      query: () => ({
+        url: "/employee/subordinatesList",
+      }),
+    }),
   }),
 });
 
@@ -89,4 +94,5 @@ export const {
   useLogoutEmployeeMutation,
   useGetEnumListQuery,
   useLazyGetProfileQuery,
+  useGetSubordinatesListQuery,
 } = employeeApiSlice;

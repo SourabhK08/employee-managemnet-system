@@ -1,5 +1,5 @@
 import mongoose, { Schema } from "mongoose";
-import { enums } from "../constants/enum";
+import { enums } from "../constants/enum.js";
 
 const taskSchema = new Schema(
   {

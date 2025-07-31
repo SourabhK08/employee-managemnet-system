@@ -13,7 +13,10 @@ const SelectInput = ({
   return (
     <div className="mt-4 m-2">
       {label && (
-        <label style={{ display: "block", marginBottom: "0.5rem" }}>
+        <label
+          className="font-semibold"
+          style={{ display: "block", marginBottom: "0.5rem" }}
+        >
           {label} {required && <span className="text-red-500"> *</span>}
         </label>
       )}

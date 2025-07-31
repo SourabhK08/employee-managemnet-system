@@ -202,7 +202,7 @@ function page() {
                 <ReactSelect
                   {...field}
                   options={
-                    departmentList?.data?.dept?.map((dept) => ({
+                    departmentList?.data?.departments?.map((dept) => ({
                       value: dept._id,
                       label: dept.name,
                     })) || []
@@ -323,7 +323,6 @@ function page() {
                 }
                 value={field.value}
                 onChange={field.onChange}
-                
                 placeholder="Select team leader"
                 error={errors.teamLeader}
               />

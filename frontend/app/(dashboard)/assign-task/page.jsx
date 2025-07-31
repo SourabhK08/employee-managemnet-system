@@ -1,51 +1,65 @@
 "use client";
+
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
-import usePermission from "@/hooks/useCheckPermission";
-import { useDebounce } from "@/hooks/useDebounce";
 import {
-  useDeleteEmployeeMutation,
-  useGetEmployeeListQuery,
-} from "@/store/features/employeeSlice";
+  useDeleteRoleMutation,
+  useGetRoleListQuery,
+} from "@/store/features/roleSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
 
-function page() {
-  const router = useRouter();
-  const canAddEmployee = usePermission("ADD_EMPLOYEE");
-  const canListEmployee = usePermission("LIST_EMPLOYEE");
-  const canEditEmployee = usePermission("UPDATE_EMPLOYEE");
-  const canDeleteEmployee = usePermission("DELETE_EMPLOYEE");
+import usePermission from "@/hooks/useCheckPermission";
+import { useDebounce } from "@/hooks/useDebounce";
 
-  const [searchTerm, setsearchTerm] = useState("");
+function page() {
+  const canAddRole = usePermission("ADD_ROLE");
+  const canListRole = usePermission("LIST_ROLE");
+  const canEditRole = usePermission("UPDATE_ROLE");
+  const canDeleteRole = usePermission("DELETE_ROLE");
+
+  const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
   const limit = 2;
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 
-  const { data: employeeList, isLoading } = useGetEmployeeListQuery({
+  const router = useRouter();
+  const { data: roleList, isLoading } = useGetRoleListQuery({
     search: debouncedSearch,
     page,
     limit,
   });
-  const [deleteEmployee] = useDeleteEmployeeMutation();
 
-  const employeeData = employeeList?.data?.employees;
+  const [deleteRole] = useDeleteRoleMutation();
 
-  const totalCount = employeeList?.data?.totalCount;
+  const roleData = roleList?.data?.roles || [];
+
+  const totalCount = roleList?.data?.totalCount;
   const totalPages = Math.ceil(totalCount / limit);
+
+  console.log("rolelist", roleList);
+
+  useEffect(() => {
+    setPage(1);
+  }, [debouncedSearch]);
 
   const handleDelete = async (id) => {
     console.log("selected id", id);
 
     try {
-      const res = await deleteEmployee(id).unwrap();
+      const res = await deleteRole(id).unwrap();
       console.log("del res ---", res);
 
-      toast.success(res.message || "Employee deleted successfully");
+      if (res.success) {
+        toast.success(res.message || "Employee deleted successfully");
+      } else {
+        toast.error("Failed to delete employee");
+      }
     } catch (err) {
+      console.error("Delete error", err);
       toast.error(err?.message || "Something went wrong");
     }
   };
@@ -62,51 +76,28 @@ function page() {
       render: (value) => value.charAt(0).toUpperCase() + value.slice(1),
     },
     {
-      Header: "Email",
-      accessor: "email",
-    },
-    {
-      Header: "Phone",
-      accessor: "phone",
-    },
-    {
-      Header: "Department",
-      accessor: "department",
-      render: (value) => value?.map((v) => v.name).join(", "),
-    },
-    {
-      Header: "Role",
-      accessor: "role",
-      render: (value) => value?.name || "---",
-    },
-    {
-      Header: "Team Leader",
-      accessor: "teamLeader",
-      render: (value) => value?.name || "---",
-    },
-    {
-      Header: "Salary",
-      accessor: "salary",
+      Header: "Description",
+      accessor: "description",
     },
   ];
 
-  if (canEditEmployee || canDeleteEmployee) {
+  if (canEditRole || canDeleteRole) {
     columns.push({
       Header: "Actions",
       accessor: "actions",
       render: (value, row) => (
         <div className="flex gap-2">
-          {canEditEmployee && (
+          {canEditRole && (
             <Button
               className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
               onClick={() =>
-                router.push(`/employee/add-employee?id=${row._id}&mode=edit`)
+                router.push(`role/add-role?id=${row?._id}&mode=edit`)
               }
             >
               Edit
             </Button>
           )}
-          {canDeleteEmployee && (
+          {canDeleteRole && (
             <Button
               className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
               onClick={() => handleDelete(row?._id)}
@@ -123,29 +114,29 @@ function page() {
     <div className="p-6 bg-gray-100">
       <div className="flex justify-between">
         <div>
-          <h1 className="text-2xl font-bold mb-6">Employee Management</h1>
+          <h1 className="text-2xl font-bold mb-6">Assigned Task Management</h1>
         </div>
-        {canAddEmployee && (
+        {canAddRole && (
           <div>
             <Button
               icon={PlusIcon}
-              onClick={() => router.push("/employee/add-employee")}
+              onClick={() => router.push("assign-task/add-task")}
             >
-              Add Employee
+              Assign Task
             </Button>
           </div>
         )}
       </div>
 
-      {canListEmployee ? (
+      {canListRole ? (
         <ReusableTable
           columns={columns}
-          data={employeeData}
+          data={roleData}
           loading={isLoading}
-          emptyMessage={employeeList?.message || "No employees found"}
-          searchBarPlaceholder="Search by name or email"
+          emptyMessage={roleList?.message || "No role found"}
           searchValue={searchTerm}
-          onSearchChange={(val) => setsearchTerm(val)}
+          searchBarPlaceholder="Search by name"
+          onSearchChange={(val) => setSearchTerm(val)}
           page={page}
           setPage={setPage}
           totalPages={totalPages}

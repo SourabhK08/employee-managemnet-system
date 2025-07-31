@@ -9,11 +9,12 @@ const TextInput = ({
   classname,
   error,
   register,
+  disabled,
 }) => {
   return (
     <div className="mt-4">
       {label && (
-        <label htmlFor={name} className={` p-2 ${classname}`}>
+        <label htmlFor={name} className={` p-2 font-semibold ${classname}`}>
           {" "}
           {label} {required && <span className="text-red-500"> *</span>}{" "}
         </label>
@@ -26,6 +27,7 @@ const TextInput = ({
           maxLength={name === "phone" ? 10 : undefined}
           className={`border p-2 w-full rounded-md ${classname} `}
           {...(register ? register(name) : {})}
+          disabled={disabled}
         />
       </div>
 

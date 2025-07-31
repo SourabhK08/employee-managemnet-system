@@ -74,7 +74,7 @@ export default function Sidebar() {
     },
     {
       label: "Assign Task",
-      href: "/dashboard/settings",
+      href: "/assign-task",
       show: canViewTask,
     },
     {

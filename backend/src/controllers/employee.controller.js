@@ -177,12 +177,12 @@ const logoutEmployee = asyncHandler(async (req, res) => {
 });
 
 const listEmployees = asyncHandler(async (req, res) => {
-  const { search,page=1,limit=10 } = req.query;
+  const { search, page = 1, limit = 10 } = req.query;
 
   const pageNum = parseInt(page);
-  const limitNum = parseInt(limit)  
+  const limitNum = parseInt(limit);
 
-  const skip = (pageNum - 1) * limitNum
+  const skip = (pageNum - 1) * limitNum;
 
   const query = {};
 
@@ -193,14 +193,15 @@ const listEmployees = asyncHandler(async (req, res) => {
     ];
   }
 
-  const totalCount = await Employee.countDocuments(query)
+  const totalCount = await Employee.countDocuments(query);
 
   const employees = await Employee.find(query)
     .select("-__v -password -refreshToken")
     .populate({ path: "department", select: "name description" })
     .populate({ path: "role", select: "name description" })
+    .populate({ path: "teamLeader", select: "_id name" })
     .skip(skip)
-    .limit(limitNum)
+    .limit(limitNum);
 
   const message =
     totalCount === 0
@@ -208,10 +209,10 @@ const listEmployees = asyncHandler(async (req, res) => {
         ? `No matching employees found for the keyword "${search}"`
         : "No employees found"
       : "Employee list fetched successfully";
-      
+
   return res
     .status(200)
-    .json(new ApiResponse(200, {totalCount,employees}, message));
+    .json(new ApiResponse(200, { totalCount, employees }, message));
 });
 
 const getEmployeeById = asyncHandler(async (req, res) => {
@@ -348,6 +349,24 @@ const deleteEmployee = asyncHandler(async (req, res) => {
     .json(new ApiResponse(200, deletedEmp, "Employee deleted successfully"));
 });
 
+const getSubordinatesList = asyncHandler(async (req, res) => {
+  const teamLeaderId = req.employee._id;
+
+  const subordinates = await Employee.find({ teamLeader: teamLeaderId }).select(
+    "name"
+  );
+
+  if (!subordinates) {
+    throw new ApiError(404, "No subordinates found");
+  }
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, subordinates, "Subordinates fetched successfully")
+    );
+});
+
 export {
   createEmployee,
   listEmployees,
@@ -356,4 +375,5 @@ export {
   deleteEmployee,
   loginEmployee,
   logoutEmployee,
+  getSubordinatesList,
 };
