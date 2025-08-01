@@ -5,7 +5,7 @@ const rootApiSlice = createApi({
     baseUrl: process.env.NEXT_PUBLIC_BACKEND_URL,
     credentials: "include",
   }),
-  tagTypes: ["empList",'deptList','roleList'],
+  tagTypes: ["empList", "deptList", "roleList", "taskList"],
   endpoints: () => ({}),
 });
 

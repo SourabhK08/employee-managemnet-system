@@ -4,7 +4,7 @@ import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
 import {
   useDeleteRoleMutation,
-  useGetRoleListQuery,
+  useGetassignListQuery,
 } from "@/store/features/roleSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { toast } from "react-toastify";
 
 import usePermission from "@/hooks/useCheckPermission";
 import { useDebounce } from "@/hooks/useDebounce";
+import { useGetAssignedTaskListQuery } from "@/store/features/taskSlice";
 
 function page() {
   const canAddRole = usePermission("ADD_ROLE");
@@ -27,7 +28,7 @@ function page() {
   const debouncedSearch = useDebounce(searchTerm, 500);
 
   const router = useRouter();
-  const { data: roleList, isLoading } = useGetRoleListQuery({
+  const { data: assignList, isLoading } = useGetAssignedTaskListQuery({
     search: debouncedSearch,
     page,
     limit,
@@ -35,12 +36,12 @@ function page() {
 
   const [deleteRole] = useDeleteRoleMutation();
 
-  const roleData = roleList?.data?.roles || [];
+  const roleData = assignList?.data?.roles || [];
 
-  const totalCount = roleList?.data?.totalCount;
+  const totalCount = assignList?.data?.totalCount;
   const totalPages = Math.ceil(totalCount / limit);
 
-  console.log("rolelist", roleList);
+  console.log("assignList", assignList);
 
   useEffect(() => {
     setPage(1);
@@ -133,7 +134,7 @@ function page() {
           columns={columns}
           data={roleData}
           loading={isLoading}
-          emptyMessage={roleList?.message || "No role found"}
+          emptyMessage={assignList?.message || "No role found"}
           searchValue={searchTerm}
           searchBarPlaceholder="Search by name"
           onSearchChange={(val) => setSearchTerm(val)}
