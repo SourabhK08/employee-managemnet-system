@@ -36,7 +36,8 @@ function page() {
 
   const [deleteRole] = useDeleteRoleMutation();
 
-  const roleData = assignList?.data?.roles || [];
+  const assignedTaskList = assignList?.data?.tasks || {};
+  console.log("assignedTaskList", assignedTaskList);
 
   const totalCount = assignList?.data?.totalCount;
   const totalPages = Math.ceil(totalCount / limit);
@@ -72,13 +73,27 @@ function page() {
       render: (value) => value.slice(-6), // Show last 6 characters
     },
     {
-      Header: "Name",
-      accessor: "name",
-      render: (value) => value.charAt(0).toUpperCase() + value.slice(1),
+      Header: "Assigned To",
+      accessor: "assignedTo",
+      render: (_, row) => row?.assignedTo?.name || "N/A",
     },
     {
       Header: "Description",
-      accessor: "description",
+      accessor: "taskDescription",
+      render: (_, row) =>
+        row?.taskDescription?.map((desc) => desc.description).join(", "),
+    },
+    {
+      Header: "Start Date",
+      accessor: "startDate",
+    },
+    {
+      Header: "End Date",
+      accessor: "endDate",
+    },
+    {
+      Header: "Status",
+      accessor: "status",
     },
   ];
 
@@ -132,7 +147,7 @@ function page() {
       {canListRole ? (
         <ReusableTable
           columns={columns}
-          data={roleData}
+          data={assignedTaskList}
           loading={isLoading}
           emptyMessage={assignList?.message || "No role found"}
           searchValue={searchTerm}

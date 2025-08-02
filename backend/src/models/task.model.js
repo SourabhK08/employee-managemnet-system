@@ -5,10 +5,6 @@ const taskSchema = new Schema(
   {
     taskDescription: [
       {
-        id: {
-          type: String,
-          default: () => new mongoose.Types.ObjectId().toString(),
-        },
         description: {
           type: String,
           required: true,

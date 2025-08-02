@@ -21,7 +21,7 @@ function page() {
 
   const [searchTerm, setsearchTerm] = useState("");
   const [page, setPage] = useState(1);
-  const limit = 2;
+  const limit = 10;
 
   const debouncedSearch = useDebounce(searchTerm, 500);
 

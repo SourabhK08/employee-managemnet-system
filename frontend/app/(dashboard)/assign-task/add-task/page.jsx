@@ -4,15 +4,8 @@ import TextInput from "@/components/ui-main/TextInput";
 import { Button } from "@/components/ui/button";
 import { Controller, useFieldArray, useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import roleSchema from "@/schema/addRoleSchema";
-import {
-  useAddRoleMutation,
-  useGetRoleByIdQuery,
-  useUpdateRoleMutation,
-} from "@/store/features/roleSlice";
 import { toast } from "react-toastify";
 import { useRouter, useSearchParams } from "next/navigation";
-
 import usePermission from "@/hooks/useCheckPermission";
 import SelectInput from "@/components/ui-main/SelectInput";
 import {
@@ -21,18 +14,24 @@ import {
 } from "@/store/features/employeeSlice";
 import { useSelector } from "react-redux";
 import { PlusIcon } from "lucide-react";
+import {
+  useAddTaskMutation,
+  useGetTaskByIdQuery,
+  useUpdateTaskMutation,
+} from "@/store/features/taskSlice";
+import addTaskSchema from "@/schema/assignTaskSchema";
 
 export default function AddTaskForm() {
-  const hasAddRolePermisssion = usePermission("ADD_ROLE");
+  const hasAssignTaskPermisssion = usePermission("ASSIGN_TASK");
 
   const router = useRouter();
   useEffect(() => {
-    if (!hasAddRolePermisssion) {
+    if (!hasAssignTaskPermisssion) {
       router.push("/dashboard");
     }
   }, []);
-  const [addRole] = useAddRoleMutation();
-  const [updateRole] = useUpdateRoleMutation();
+  const [addTask] = useAddTaskMutation();
+  const [updateTask] = useUpdateTaskMutation();
 
   const { data: enumData } = useGetEnumListQuery();
   const { data: subordinatesList } = useGetSubordinatesListQuery();
@@ -43,7 +42,7 @@ export default function AddTaskForm() {
   const id = searchParams.get("id");
   const mode = searchParams.get("mode");
 
-  const { data: selectedRole } = useGetRoleByIdQuery(id, {
+  const { data: taskDataById } = useGetTaskByIdQuery(id, {
     skip: !id || mode !== "edit",
   });
 
@@ -52,23 +51,24 @@ export default function AddTaskForm() {
     handleSubmit,
     reset,
     setValue,
+    getValues,
     control,
     watch,
     formState: { errors },
   } = useForm({
-    resolver: yupResolver(roleSchema),
+    resolver: yupResolver(addTaskSchema),
     defaultValues: {
       taskDescription: [
         {
           description: "",
         },
       ],
-      assignedBy: user.name,
+      assignedBy: "",
       assignedTo: "",
-      startDate: "",
-      endDate: "",
-      status: "",
-      priority: "",
+      startDate: new Date().toISOString().split("T")[0],
+      endDate: null,
+      status: "Pending",
+      priority: "Medium",
     },
   });
 
@@ -77,41 +77,53 @@ export default function AddTaskForm() {
     name: "taskDescription",
   });
 
+  useEffect(() => {
+    if (user?._id) {
+      setValue("assignedBy", user._id);
+    }
+  }, [user, setValue]);
+
+  console.log("form values", getValues(), "form errors", errors);
+
   const onSubmit = async (data) => {
+    console.log("form data--->", data);
+
     try {
       if (mode === "edit") {
-        const res = await updateRole({
+        const res = await updateTask({
           id,
-          updatedRole: data,
+          updatedTask: data,
         }).unwrap();
 
-        toast.success(res.message || "Role updated successfully");
-        router.push("/role");
+        toast.success(res.message || "Task updated successfully");
+        router.push("/assign-task");
       } else {
-        const res = await addRole(data).unwrap();
-        toast.success(res.message || "Role created successfully");
-        router.push("/role");
+        const res = await addTask(data).unwrap();
+        toast.success(res.message || "Task assigned successfully");
+        router.push("/assign-task");
       }
     } catch (error) {
       toast.error(error?.data?.message || "Something went wrong");
+    } finally {
+      reset();
     }
   };
 
-  useEffect(() => {
-    if (mode === "edit" && id && selectedRole?.data) {
-      reset({
-        name: selectedRole.data.name,
-        description: selectedRole.data.description,
-        permissions: selectedRole.data.permissions || [],
-      });
-    }
-  }, [selectedRole, mode]);
+  // useEffect(() => {
+  //   if (mode === "edit" && id && taskDataById?.data) {
+  //     reset({
+  //       name: selectedRole.data.name,
+  //       description: selectedRole.data.description,
+  //       permissions: selectedRole.data.permissions || [],
+  //     });
+  //   }
+  // }, [selectedRole, mode]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-gray-100 p-4">
       <div className="p-2 text-center border-b-2">
         <h1 className="font-bold text-2xl">
-          {mode === "edit" ? "Update" : "Add"} Task
+          {mode === "edit" ? "Update Assigned" : "Assign"} Task
         </h1>
       </div>
 
@@ -119,11 +131,13 @@ export default function AddTaskForm() {
         <TextInput
           name="assignedBy"
           label={"Assign By"}
-          register={register}
+          // register={register}
           error={errors.assignedBy}
           required={true}
+          value={user.name}
           disabled={true}
         />
+        <input type="hidden" {...register("assignedBy")} value={user._id} />
         <Controller
           name="assignedTo"
           control={control}
@@ -145,7 +159,9 @@ export default function AddTaskForm() {
 
         <div className="col-span-2 mt-3">
           <div className="flex justify-between items-center ">
-            <h3 className="font-semibold ml-3">Tasks</h3>
+            <h3 className="font-semibold ml-3">
+              Tasks <span className="text-red-500">*</span>{" "}
+            </h3>
             <Button
               type="button"
               onClick={() => append({ description: "" })}
@@ -191,7 +207,7 @@ export default function AddTaskForm() {
               options={
                 Object.entries(enumData?.data?.taskStatus || {}).map(
                   ([id, label]) => ({
-                    id,
+                    id: label,
                     label,
                   })
                 ) || []
@@ -213,7 +229,7 @@ export default function AddTaskForm() {
               options={
                 Object.entries(enumData?.data?.taskPriority || {}).map(
                   ([id, label]) => ({
-                    id,
+                    id: label,
                     label,
                   })
                 ) || []

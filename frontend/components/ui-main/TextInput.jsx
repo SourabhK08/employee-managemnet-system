@@ -10,6 +10,7 @@ const TextInput = ({
   error,
   register,
   disabled,
+  value,
 }) => {
   return (
     <div className="mt-4">
@@ -24,6 +25,7 @@ const TextInput = ({
           type={type}
           placeholder={placeholder}
           name={name}
+          value={value}
           maxLength={name === "phone" ? 10 : undefined}
           className={`border p-2 w-full rounded-md ${classname} `}
           {...(register ? register(name) : {})}
