@@ -20,9 +20,10 @@ import {
   useUpdateTaskMutation,
 } from "@/store/features/taskSlice";
 import addTaskSchema from "@/schema/assignTaskSchema";
+import { formatDate } from "@/utils";
 
 export default function AddTaskForm() {
-  const hasAssignTaskPermisssion = usePermission("ASSIGN_TASK");
+  const hasAssignTaskPermisssion = usePermission("ADD_ASSIGN_TASK");
 
   const router = useRouter();
   useEffect(() => {
@@ -109,15 +110,18 @@ export default function AddTaskForm() {
     }
   };
 
-  // useEffect(() => {
-  //   if (mode === "edit" && id && taskDataById?.data) {
-  //     reset({
-  //       name: selectedRole.data.name,
-  //       description: selectedRole.data.description,
-  //       permissions: selectedRole.data.permissions || [],
-  //     });
-  //   }
-  // }, [selectedRole, mode]);
+  useEffect(() => {
+    if (mode === "edit" && id && taskDataById?.data) {
+      reset({
+        assignedTo: taskDataById?.data.assignedTo,
+        taskDescription: taskDataById?.data.taskDescription || {},
+        status: taskDataById?.data.status,
+        priority: taskDataById?.data.priority,
+        startDate: formatDate(taskDataById?.data.startDate),
+        endDate: formatDate(taskDataById?.data.endDate),
+      });
+    }
+  }, [taskDataById, mode]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-gray-100 p-4">
@@ -261,7 +265,7 @@ export default function AddTaskForm() {
       </div>
 
       <div className="flex justify-between pt-6">
-        <Button type="button" onClick={() => router.push("/role")}>
+        <Button type="button" onClick={() => router.push("/assign-task")}>
           Cancel
         </Button>
         <Button type="submit" variant="submit">

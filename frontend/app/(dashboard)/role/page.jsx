@@ -24,7 +24,7 @@ function page() {
   const [page, setPage] = useState(1);
   const limit = 2;
 
-  const debouncedSearch = useDebounce(searchTerm,500)
+  const debouncedSearch = useDebounce(searchTerm, 500);
 
   const router = useRouter();
   const { data: roleList, isLoading } = useGetRoleListQuery({
@@ -43,9 +43,8 @@ function page() {
   console.log("rolelist", roleList);
 
   useEffect(() => {
-  setPage(1); 
-}, [debouncedSearch]);
-
+    setPage(1);
+  }, [debouncedSearch]);
 
   const handleDelete = async (id) => {
     console.log("selected id", id);
@@ -55,9 +54,9 @@ function page() {
       console.log("del res ---", res);
 
       if (res.success) {
-        toast.success(res.message || "Employee deleted successfully");
+        toast.success(res.message || "Role deleted successfully");
       } else {
-        toast.error("Failed to delete employee");
+        toast.error("Failed to delete role");
       }
     } catch (err) {
       console.error("Delete error", err);

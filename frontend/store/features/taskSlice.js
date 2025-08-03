@@ -5,10 +5,12 @@ export const taskApiSlice = rootApiSlice.injectEndpoints({
     getAssignedTaskList: builder.query({
       query: ({ search, page = 1, limit = 10, status, priority }) => {
         const params = new URLSearchParams({
-          page: page?.toString,
-          limit: limit?.toString,
+          page: page?.toString(),
+          limit: limit?.toString(),
         });
-        return { url: "/task/assignedTaskList" };
+
+        if (search) params.append("search", search);
+        return { url: `/task/assignedTaskList?${params.toString()}` };
       },
       providesTags: ["taskList"],
     }),
@@ -25,10 +27,12 @@ export const taskApiSlice = rootApiSlice.injectEndpoints({
     getMyTaskList: builder.query({
       query: ({ search, page = 1, limit = 10, status, priority }) => {
         const params = new URLSearchParams({
-          page: page?.toString,
-          limit: limit?.toString,
+          page: page?.toString(),
+          limit: limit?.toString(),
         });
-        return { url: "/task/myTaskList" };
+
+        if (search) params.append("search", search);
+        return { url: `/task/myTaskList?${params.toString()}` };
       },
       providesTags: ["taskList"],
     }),

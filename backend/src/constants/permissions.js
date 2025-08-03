@@ -17,8 +17,13 @@ const userPermissions = {
   DELETE_DEPARTMENT: "delete-department",
   UPDATE_DEPARTMENT: "update-department",
 
-  VIEW_TASK: "view-task",
-  ASSIGN_TASK: "assign-task",
+  ADD_ASSIGN_TASK: "add-assign-task",
+  LIST_ASSIGN_TASK: "list-assign-task",
+  UPDATE_ASSIGN_TASK: "update-assign-task",
+  DELETE_ASSIGN_TASK: "delete-assign-task",
+  VIEW_ASSIGN_TASK: "view-assign-task",
+
+  LIST_MY_TASK: "list-my-task",
 
   VIEW_ATTENDANCE: "view-attendance",
   MANAGE_ATTENDANCE: "manage-attendance",

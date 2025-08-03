@@ -2,24 +2,23 @@
 
 import ReusableTable from "@/components/ui-main/Table";
 import { Button } from "@/components/ui/button";
-import {
-  useDeleteRoleMutation,
-  useGetassignListQuery,
-} from "@/store/features/roleSlice";
 import { PlusIcon } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { toast } from "react-toastify";
-
 import usePermission from "@/hooks/useCheckPermission";
 import { useDebounce } from "@/hooks/useDebounce";
-import { useGetAssignedTaskListQuery } from "@/store/features/taskSlice";
+import {
+  useDeleteTaskMutation,
+  useGetAssignedTaskListQuery,
+} from "@/store/features/taskSlice";
+import { formatDate, StatusBadge } from "@/utils";
 
 function page() {
-  const canAddRole = usePermission("ADD_ROLE");
-  const canListRole = usePermission("LIST_ROLE");
-  const canEditRole = usePermission("UPDATE_ROLE");
-  const canDeleteRole = usePermission("DELETE_ROLE");
+  const canAssignTask = usePermission("ADD_ASSIGN_TASK");
+  const canListAssignedTask = usePermission("LIST_ASSIGN_TASK");
+  const canEditAssignedTask = usePermission("UPDATE_ASSIGN_TASK");
+  const canDeleteAssignedTask = usePermission("DELETE_ASSIGN_TASK");
 
   const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(1);
@@ -34,7 +33,7 @@ function page() {
     limit,
   });
 
-  const [deleteRole] = useDeleteRoleMutation();
+  const [deleteAssignedTask] = useDeleteTaskMutation();
 
   const assignedTaskList = assignList?.data?.tasks || {};
   console.log("assignedTaskList", assignedTaskList);
@@ -52,17 +51,16 @@ function page() {
     console.log("selected id", id);
 
     try {
-      const res = await deleteRole(id).unwrap();
+      const res = await deleteAssignedTask(id).unwrap();
       console.log("del res ---", res);
 
       if (res.success) {
-        toast.success(res.message || "Employee deleted successfully");
+        toast.success(res.message || "Assigned Task deleted successfully");
       } else {
-        toast.error("Failed to delete employee");
+        toast.error("Failed to delete assigned task");
       }
     } catch (err) {
-      console.error("Delete error", err);
-      toast.error(err?.message || "Something went wrong");
+      toast.error(err?.data?.message || "Something went wrong");
     }
   };
 
@@ -86,34 +84,37 @@ function page() {
     {
       Header: "Start Date",
       accessor: "startDate",
+      render: (val) => formatDate(val),
     },
     {
       Header: "End Date",
       accessor: "endDate",
+      render: (val) => formatDate(val),
     },
     {
       Header: "Status",
       accessor: "status",
+      render: (val) => <StatusBadge status={val} />,
     },
   ];
 
-  if (canEditRole || canDeleteRole) {
+  if (canEditAssignedTask || canDeleteAssignedTask) {
     columns.push({
       Header: "Actions",
       accessor: "actions",
       render: (value, row) => (
         <div className="flex gap-2">
-          {canEditRole && (
+          {canEditAssignedTask && (
             <Button
               className="bg-blue-500 text-white px-2 py-1 rounded text-sm hover:bg-blue-600"
               onClick={() =>
-                router.push(`role/add-role?id=${row?._id}&mode=edit`)
+                router.push(`assign-task/add-task?id=${row?._id}&mode=edit`)
               }
             >
               Edit
             </Button>
           )}
-          {canDeleteRole && (
+          {canDeleteAssignedTask && (
             <Button
               className="bg-red-500 text-white px-2 py-1 rounded text-sm hover:bg-red-600"
               onClick={() => handleDelete(row?._id)}
@@ -132,7 +133,7 @@ function page() {
         <div>
           <h1 className="text-2xl font-bold mb-6">Assigned Task Management</h1>
         </div>
-        {canAddRole && (
+        {canAssignTask && (
           <div>
             <Button
               icon={PlusIcon}
@@ -144,14 +145,14 @@ function page() {
         )}
       </div>
 
-      {canListRole ? (
+      {canListAssignedTask ? (
         <ReusableTable
           columns={columns}
           data={assignedTaskList}
           loading={isLoading}
-          emptyMessage={assignList?.message || "No role found"}
+          emptyMessage={assignList?.message || "No assigned task found"}
           searchValue={searchTerm}
-          searchBarPlaceholder="Search by name"
+          searchBarPlaceholder="Search by task description"
           onSearchChange={(val) => setSearchTerm(val)}
           page={page}
           setPage={setPage}

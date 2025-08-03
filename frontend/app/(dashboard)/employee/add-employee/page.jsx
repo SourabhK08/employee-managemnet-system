@@ -144,7 +144,7 @@ function page() {
                 options={
                   Object.entries(enumData?.data?.gender || {}).map(
                     ([id, label]) => ({
-                      id,
+                      id: label,
                       label,
                     })
                   ) || []
