@@ -26,6 +26,14 @@ const options = {
   secure: true,
 };
 
+const cookieOptions = {
+  httpOnly: true,
+  // secure: process.env.NODE_ENV === "production",  true in prod (HTTPS)
+  secure: false,
+  sameSite: "Strict", // Prevent CSRF
+  maxAge: 24 * 60 * 60 * 1000, // 1 day
+};
+
 const createEmployee = asyncHandler(async (req, res) => {
   const {
     name,
@@ -136,14 +144,15 @@ const loginEmployee = asyncHandler(async (req, res) => {
     employeeFoundInDb._id
   );
 
-  const loggedInEmployee = await Employee.findById(
-    employeeFoundInDb._id
-  ).select("-password -refreshToken -__v");
+  const loggedInEmployee = await Employee.findById(employeeFoundInDb._id)
+    .select("-password -refreshToken -__v")
+    .populate("department", "name description")
+    .populate("role", "name description permissions");
 
   return res
     .status(200)
-    .cookie("accessToken", accessToken, options)
-    .cookie("refreshToken", refreshToken, options)
+    .cookie("accessToken", accessToken, cookieOptions)
+    .cookie("refreshToken", refreshToken, cookieOptions)
     .json(
       new ApiResponse(
         200,

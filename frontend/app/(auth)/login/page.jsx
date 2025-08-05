@@ -57,12 +57,13 @@ function LoginPage() {
 
       if (loginRes.success) {
         toast.success(loginRes.message || "Logged In Successfully");
+
         const profileRes = await getProfile().unwrap();
 
         if (profileRes.success) {
           dispatch(setUserProfile(profileRes));
-          localStorage.setItem("userProfile", JSON.stringify(profileRes));
-          localStorage.setItem("isAuthenticated", "true");
+          // localStorage.setItem("userProfile", JSON.stringify(profileRes));
+          // localStorage.setItem("isAuthenticated", "true");
 
           reset();
           router.replace("/dashboard");
@@ -77,8 +78,8 @@ function LoginPage() {
 
       toast.error(error?.data?.message || "Something went wrong");
 
-      localStorage.removeItem("userProfile");
-      localStorage.removeItem("isAuthenticated");
+      // localStorage.removeItem("userProfile");
+      // localStorage.removeItem("isAuthenticated");
     } finally {
       setIsLoading(false);
     }
