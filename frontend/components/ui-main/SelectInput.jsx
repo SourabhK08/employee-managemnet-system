@@ -41,3 +41,30 @@ const SelectInput = ({
 };
 
 export default SelectInput;
+
+/*
+
+import Select from 'react-select';
+
+const SelectInput = ({ label, options, value, onChange, required, error }) => {
+  return (
+    <div className="mt-4 m-2">
+      {label && (
+        <label className="font-semibold block mb-2">
+          {label} {required && <span className="text-red-500">*</span>}
+        </label>
+      )}
+      <Select
+        value={options.find(option => option.id === value)}
+        onChange={(selectedOption) => onChange(selectedOption?.id || "")}
+        options={options.map((option) => ({
+          value: option.id,
+          label: option.label,
+        }))}
+        placeholder="Select..."
+      />
+      {error && <div className="mt-1 text-red-500 text-sm">{error.message}</div>}
+    </div>
+  );
+};
+*/

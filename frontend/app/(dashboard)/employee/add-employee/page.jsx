@@ -214,7 +214,7 @@ function page() {
                   isMulti={true}
                   closeMenuOnSelect={false}
                   value={
-                    departmentList?.data?.dept
+                    departmentList?.data?.departments
                       ?.filter((dept) => field.value?.includes(dept._id))
                       .map((dept) => ({
                         value: dept._id,
