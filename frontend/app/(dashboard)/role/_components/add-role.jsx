@@ -54,6 +54,8 @@ export default function AddRoleForm() {
 
   const { data: selectedRole } = useGetRoleByIdQuery(id, {
     skip: !id || mode !== "edit",
+    refetchOnMountOrArgChange: true,
+    refetchOnReconnect: true,
   });
 
   const {
@@ -73,7 +75,6 @@ export default function AddRoleForm() {
   });
 
   const selectedPermissions = watch("permissions");
-  const [internalPermissions, setInternalPermissions] = useState([]);
 
   const handleTogglePermission = (permKey) => {
     const updated = selectedPermissions.includes(permKey)
@@ -117,6 +118,22 @@ export default function AddRoleForm() {
 
   const groupedPermissions = groupByModule(permissionList?.data || []);
 
+  const handleToggleMultiplePermissions = (permKeys, checked) => {
+    let updated = [...selectedPermissions];
+
+    if (checked) {
+      permKeys.forEach((key) => {
+        if (!updated.includes(key)) {
+          updated.push(key);
+        }
+      });
+    } else {
+      updated = updated.filter((key) => !permKeys.includes(key));
+    }
+
+    setValue("permissions", updated);
+  };
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-gray-100 p-4">
       <div className="p-2 text-center border-b-2">
@@ -143,33 +160,83 @@ export default function AddRoleForm() {
         />
       </div>
 
-      <div className="mt-6">
-        <h2 className="font-semibold text-lg mb-2">Permissions</h2>
+      <div className="mt-3">
+        <div className="flex justify-between">
+          <h2 className="font-semibold text-lg mb-2">Permissions</h2>
+          <div className="flex items-center gap-2 mb-4">
+            <Checkbox
+              checked={
+                permissionList?.data?.length > 0 &&
+                selectedPermissions.length === permissionList.data.length
+              }
+              indeterminate={
+                selectedPermissions.length > 0 &&
+                selectedPermissions.length < permissionList?.data?.length
+              }
+              onCheckedChange={(checked) => {
+                const allPermissionKeys =
+                  permissionList?.data?.map((p) => p.key) || [];
+                handleToggleMultiplePermissions(allPermissionKeys, checked);
+              }}
+              className="cursor-pointer"
+            />
+            <span className="font-semibold">Select All Permissions</span>
+          </div>
+        </div>
+
         <Accordion type="multiple" className="w-full">
-          {Object.entries(groupedPermissions).map(([module, perms]) => (
-            <AccordionItem key={module} value={module} className={`mb-3`}>
-              <AccordionTrigger className={` p-2 `}>
-                {module.replace(/_/g, " ").toUpperCase()}
-              </AccordionTrigger>
-              <AccordionContent>
-                <div className="flex flex-wrap gap-4 pl-2 mt-2">
-                  {perms.map((perm) => (
-                    <label key={perm.key} className="flex items-center gap-2">
-                      <Checkbox
-                        checked={selectedPermissions.includes(perm.key)}
-                        onCheckedChange={() => handleTogglePermission(perm.key)}
-                        className={`cursor-pointer`}
-                      />
-                      <span className="capitalize">
-                        {perm.value.replace(/-/g, " ")}
-                      </span>
-                    </label>
-                  ))}
-                </div>
-              </AccordionContent>
-            </AccordionItem>
-          ))}
+          {Object.entries(groupedPermissions).map(([module, perms]) => {
+            const allSelected = perms.every((perm) =>
+              selectedPermissions.includes(perm.key)
+            );
+            const someSelected = perms.some((perm) =>
+              selectedPermissions.includes(perm.key)
+            );
+
+            return (
+              <AccordionItem key={module} value={module} className="mb-3">
+                <AccordionTrigger className="p-2">
+                  {module.replace(/_/g, " ").toUpperCase()}
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="flex items-center gap-2 pl-2 mb-2">
+                    <Checkbox
+                      checked={allSelected}
+                      indeterminate={
+                        someSelected && !allSelected ? true : undefined
+                      }
+                      onCheckedChange={(checked) =>
+                        handleToggleMultiplePermissions(
+                          perms.map((p) => p.key),
+                          checked
+                        )
+                      }
+                      className="cursor-pointer"
+                    />
+                    <span className="font-semibold">Select All</span>
+                  </div>
+                  <div className="flex flex-wrap gap-4 pl-2 mt-2">
+                    {perms.map((perm) => (
+                      <label key={perm.key} className="flex items-center gap-2">
+                        <Checkbox
+                          checked={selectedPermissions.includes(perm.key)}
+                          onCheckedChange={() =>
+                            handleTogglePermission(perm.key)
+                          }
+                          className="cursor-pointer"
+                        />
+                        <span className="capitalize">
+                          {perm.value.replace(/-/g, " ")}
+                        </span>
+                      </label>
+                    ))}
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            );
+          })}
         </Accordion>
+
         {errors.permissions && (
           <p className="text-sm text-red-600 mt-1">
             {errors.permissions.message}

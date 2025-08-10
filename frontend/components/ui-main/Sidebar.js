@@ -140,7 +140,7 @@ export default function Sidebar() {
           bg-gray-800 text-white
           transition-all duration-300 ease-in-out
           z-50 md:z-auto
-          w-42 md:w-52
+          w-40 md:w-44
           text-sm md:text-base
           ${
             sidebarOpen

@@ -5,8 +5,8 @@ import {
   AccordionItem,
   AccordionTrigger,
   AccordionContent,
-} from "@/components/ui/accordion"; 
-import { Checkbox } from "@/components/ui/checkbox"; // Shadcn checkbox
+} from "@/components/ui/accordion";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useState } from "react";
 import { groupByModule } from "@/utils/groupPermissionsByModule";
 
@@ -22,7 +22,7 @@ export function PermissionsAccordionWithCheckbox({ permissions, onChange }) {
       updated = [...selected, permKey];
     }
     setSelected(updated);
-    onChange(updated); // send to parent
+    onChange(updated);
   };
 
   return (
