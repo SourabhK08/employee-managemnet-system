@@ -96,6 +96,11 @@ export default function Sidebar() {
       show: true,
     },
     {
+      label: "Chat",
+      href: "/chat",
+      show: true,
+    },
+    {
       label: "Attendance",
       href: "/dashboard/settings",
       show: canViewAttendance,

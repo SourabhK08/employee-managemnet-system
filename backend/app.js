@@ -9,6 +9,7 @@ import { errorHandler } from "./src/middlewares/errorHandler.js";
 import enumRouter from "./src/routes/enum.route.js";
 import { permissionRoutes } from "./src/routes/permission.route.js";
 import { taskRoutes } from "./src/routes/task.route.js";
+import chatRoutes from "./src/routes/chat.route.js";
 
 const app = express();
 
@@ -65,6 +66,7 @@ app.use("/api/employee", employeeRouter);
 app.use("/api/department", departmentRoutes);
 app.use("/api/role", roleRoutes);
 app.use("/api/task", taskRoutes);
+app.use("/api/chat", chatRoutes);
 
 app.use(errorHandler);
 
