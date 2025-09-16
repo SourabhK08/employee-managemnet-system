@@ -1,118 +1,48 @@
 "use client";
 import { useState, useEffect } from "react";
-import { io } from "socket.io-client"; // Updated import
-import { useSelector } from "react-redux"; // Assuming you use Redux
+import { io } from "socket.io-client";
+import { useSelector } from "react-redux";
+import {
+  useGetChatContactsQuery,
+  useGetChatHistoryQuery,
+} from "@/store/features/chatSlice";
+import { skipToken } from "@reduxjs/toolkit/query";
+import Cookies from "js-cookie";
 
-// Initialize socket connection
 let socket = null;
 
-export default function ChatPage() {
+function ChatPage() {
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [isConnected, setIsConnected] = useState(false);
   const [activeUsers, setActiveUsers] = useState([]);
-  const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
 
-  // Get current user from Redux store (assuming you store user data)
   const currentUser = useSelector((state) => state.user?.user);
-  const token = useSelector((state) => state.user?.accessToken);
+  // const token = useSelector((state) => state.user?.accessToken);
+  // const token = Cookies.get("accessToken");
+  // console.log("---token---", token);
 
-  useEffect(() => {
-    // Initialize socket connection
-    socket = io("http://localhost:9000", {
-      transports: ["websocket", "polling"], // Allow both transports
-      timeout: 20000,
-    });
+  const {
+    data: contactsData,
+    isLoading: contactsLoading,
+    isError: contactsError,
+  } = useGetChatContactsQuery();
 
-    // Connection event handlers
-    socket.on("connect", () => {
-      console.log("Connected to server:", socket.id);
-      setIsConnected(true);
+  const contacts = contactsData?.data || [];
 
-      // Join room with current user's ID
-      if (currentUser?._id) {
-        socket.emit("joinRoom", currentUser._id);
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected from server");
-      setIsConnected(false);
-    });
-
-    socket.on("connect_error", (error) => {
-      console.error("Connection failed:", error);
-      setIsConnected(false);
-    });
-
-    // Message handlers
-    socket.on("receiveMessage", (msg) => {
-      console.log("Received message:", msg);
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    socket.on("messageSent", (msg) => {
-      console.log("Message sent confirmation:", msg);
-      setMessages((prev) => [...prev, msg]);
-    });
-
-    socket.on("messageError", (error) => {
-      console.error("Message error:", error);
-      alert("Failed to send message");
-    });
-
-    socket.on("activeUsers", (users) => {
-      setActiveUsers(users);
-    });
-
-    // Load chat contacts
-    loadChatContacts();
-
-    // Cleanup on component unmount
-    return () => {
-      if (socket) {
-        socket.disconnect();
-      }
-    };
-  }, [currentUser]);
-
-  // Load chat history when contact is selected
-  useEffect(() => {
-    if (selectedContact && currentUser) {
-      loadChatHistory(currentUser._id, selectedContact._id);
+  const {
+    data: chatHistoryData,
+    isLoading: chatLoading,
+    refetch: refetchChatHistory,
+  } = useGetChatHistoryQuery(
+    selectedContact && currentUser
+      ? { senderId: currentUser._id, receiverId: selectedContact._id }
+      : "",
+    {
+      skip: !(selectedContact && currentUser),
     }
-  }, [selectedContact, currentUser]);
-
-  const loadChatContacts = async () => {
-    try {
-      const response = await fetch("http://localhost:9000/api/chat/contacts", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (data.success) {
-        setContacts(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to load contacts:", error);
-    }
-  };
-
-  const loadChatHistory = async (senderId, receiverId) => {
-    try {
-      const response = await fetch(
-        `http://localhost:9000/api/chat/${senderId}/${receiverId}`
-      );
-      const data = await response.json();
-      if (data.success) {
-        setMessages(data.data);
-      }
-    } catch (error) {
-      console.error("Failed to load chat history:", error);
-    }
-  };
+  );
 
   const sendMessage = () => {
     if (!input.trim() || !selectedContact || !currentUser || !isConnected) {
@@ -125,16 +55,59 @@ export default function ChatPage() {
       message: input.trim(),
     };
 
-    console.log("Sending message:", messageData);
     socket.emit("sendMessage", messageData);
     setInput("");
   };
 
-  const handleKeyPress = (e) => {
-    if (e.key === "Enter") {
-      sendMessage();
+  useEffect(() => {
+    socket = io("http://localhost:9000", {
+      transports: ["websocket", "polling"],
+    });
+
+    socket.on("connect", () => {
+      setIsConnected(true);
+      if (currentUser?._id) {
+        socket.emit("joinRoom", currentUser._id);
+      }
+    });
+
+    socket.on("disconnect", () => {
+      setIsConnected(false);
+    });
+
+    socket.on("connect_error", (error) => {
+      console.error("Socket connection failed:", error);
+      setIsConnected(false);
+    });
+
+    socket.on("receiveMessage", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on("messageSent", (msg) => {
+      setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on("messageError", (error) => {
+      alert("Failed to send message");
+    });
+
+    socket.on("activeUsers", (users) => {
+      setActiveUsers(users);
+    });
+
+    return () => {
+      if (socket) socket.disconnect();
+    };
+  }, [currentUser]);
+
+  useEffect(() => {
+    console.log("chatHistoryData", chatHistoryData);
+    console.log("chatHistoryData?.success", chatHistoryData?.success);
+    if (chatHistoryData?.success) {
+      setMessages(chatHistoryData.data.messages);
     }
-  };
+  }, [chatHistoryData]);
 
   return (
     <div style={{ display: "flex", height: "100vh" }}>
@@ -205,33 +178,35 @@ export default function ChatPage() {
                 backgroundColor: "#f9f9f9",
               }}
             >
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  style={{
-                    marginBottom: "10px",
-                    textAlign:
-                      msg.sender === currentUser._id ? "right" : "left",
-                  }}
-                >
+              {messages?.map((msg, i) => {
+                const isCurrentUser = msg?.sender?._id === currentUser?._id;
+          
+                return (
                   <div
+                    key={i}
                     style={{
-                      display: "inline-block",
-                      padding: "8px 12px",
-                      borderRadius: "10px",
-                      backgroundColor:
-                        msg.sender === currentUser._id ? "#007bff" : "#e9ecef",
-                      color: msg.sender === currentUser._id ? "white" : "black",
-                      maxWidth: "70%",
+                      display: "flex",
+                      justifyContent: isCurrentUser ? "flex-end" : "flex-start",
+                      marginBottom: "10px",
                     }}
                   >
-                    <div style={{ fontSize: "14px" }}>{msg.message}</div>
-                    <div style={{ fontSize: "10px", opacity: 0.7 }}>
-                      {new Date(msg.createdAt).toLocaleTimeString()}
+                    <div
+                      style={{
+                        padding: "8px 12px",
+                        borderRadius: "10px",
+                        backgroundColor: isCurrentUser ? "#007bff" : "#e9ecef",
+                        color: isCurrentUser ? "white" : "black",
+                        maxWidth: "70%",
+                      }}
+                    >
+                      <div style={{ fontSize: "14px" }}>{msg.message}</div>
+                      <div style={{ fontSize: "10px", opacity: 0.7 }}>
+                        {new Date(msg.createdAt).toLocaleTimeString()}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
 
             {/* Input */}
@@ -240,7 +215,6 @@ export default function ChatPage() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={handleKeyPress}
                 placeholder="Type message..."
                 disabled={!isConnected}
                 style={{
@@ -271,3 +245,5 @@ export default function ChatPage() {
     </div>
   );
 }
+
+export default ChatPage;

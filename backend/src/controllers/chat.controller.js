@@ -1,74 +1,73 @@
+import { Employee } from "../models/emp.model.js";
 import { ChatMessage } from "../models/chat.model.js";
-import { Employee } from "../models/index.js";
-
-// Save new message (Optional - Socket already saves)
-export const saveMessage = async (req, res) => {
-  try {
-    const { sender, receiver, message } = req.body;
-
-    // Validate that sender and receiver exist
-    const senderExists = await Employee.findById(sender);
-    const receiverExists = await Employee.findById(receiver);
-
-    if (!senderExists || !receiverExists) {
-      return res.status(404).json({ error: "Sender or receiver not found" });
-    }
-
-    const newMsg = await ChatMessage.create({ sender, receiver, message });
-
-    const populatedMsg = await ChatMessage.findById(newMsg._id)
-      .populate("sender", "name email")
-      .populate("receiver", "name email");
-
-    res.status(201).json(populatedMsg);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
-
-// Get chat history between two employees
-export const getMessages = async (req, res) => {
-  try {
-    const { sender, receiver } = req.params;
-
-    const messages = await ChatMessage.find({
-      $or: [
-        { sender, receiver },
-        { sender: receiver, receiver: sender },
-      ],
-    })
-      .populate("sender", "name email")
-      .populate("receiver", "name email")
-      .sort({ createdAt: 1 });
-
-    res.json({
-      success: true,
-      count: messages.length,
-      data: messages,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
+import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/ApiResponse.js";
+import asyncHandler from "../utils/AsyncHandler.js";
 
 // Get all employees for chat contacts
-export const getChatContacts = async (req, res) => {
-  try {
-    const currentEmployeeId = req.employee?._id; // from auth middleware
+const getChatContacts = asyncHandler(async (req, res) => {
+  const currentEmployeeId = req.employee?._id;
 
-    console.log("====================================");
-    console.log(currentEmployeeId);
-    console.log("====================================");
+  const employees = await Employee.find({
+    _id: { $ne: currentEmployeeId },
+  }).select("name email department").populate("department","name");
 
-    const employees = await Employee.find({
-      _id: { $ne: currentEmployeeId }, // Exclude current employee
-    }).select("name email department");
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(200, employees, "Chat contacts fetched successfully")
+    );
+});
 
-    res.json({
-      success: true,
-      data: employees,
-    });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
+// Get chat history between two employees
+const getMessages = asyncHandler(async (req, res) => {
+  const { sender, receiver } = req.params;
+
+  const messages = await ChatMessage.find({
+    $or: [
+      { sender, receiver },
+      { sender: receiver, receiver: sender },
+    ],
+  })
+    .populate("sender", "name email")
+    .populate("receiver", "name email")
+    .sort({ createdAt: 1 });
+
+  const count = messages.length;
+
+  return res
+    .status(200)
+    .json(
+      new ApiResponse(
+        200,
+        { count, messages },
+        "All messages fetched successfully"
+      )
+    );
+});
+
+// Save new message (Optional - Socket already saves)
+const saveMessage = asyncHandler(async (req, res) => {
+  const { sender, receiver, message } = req.body;
+
+  const senderExists = await Employee.findById(sender);
+  const receiverExists = await Employee.findById(receiver);
+
+  if (!senderExists || !receiverExists) {
+    throw new ApiError(404, "Sender or receiver not found");
   }
-};
+
+  const newMessage = await ChatMessage.create({sender,receiver,message})
+
+  const populatedMsg = await ChatMessage.findById(newMessage._id)
+        .populate("sender", "name email")
+        .populate("receiver", "name email");
+
+  return res
+  .status(201)
+  .json(
+    new ApiResponse(201,populatedMsg,'Message saved successfully')
+  ) 
+});
+
+export { getChatContacts, getMessages,saveMessage };

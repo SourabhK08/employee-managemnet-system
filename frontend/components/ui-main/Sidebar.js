@@ -141,7 +141,7 @@ export default function Sidebar() {
         className={`
           fixed md:relative
           top-0 left-0
-          h-screen
+          min-h-screen
           bg-gray-800 text-white
           transition-all duration-300 ease-in-out
           z-50 md:z-auto

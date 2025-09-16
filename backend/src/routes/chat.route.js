@@ -8,10 +8,10 @@ import { verifyJWT } from "../middlewares/auth.js";
 
 const chatRoutes = express.Router();
 
-// chatRoutes.use(verifyJWT);
+chatRoutes.use(verifyJWT);
 
-chatRoutes.get("/contacts", getChatContacts); // Get all employees for chat
-chatRoutes.post("/send", saveMessage); // Send message (backup API)
-chatRoutes.get("/:sender/:receiver", getMessages); // Fetch chat history
+chatRoutes.route("/contacts").get(getChatContacts);// Get all employees for chat
+chatRoutes.route("/send").post(saveMessage);// Send message (backup API)
+chatRoutes.route("/:sender/:receiver").get(getMessages);// Fetch chat history
 
 export default chatRoutes;
