@@ -2,6 +2,7 @@ import { Employee } from "../models/index.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import asyncHandler from "../utils/AsyncHandler.js";
+import uploadOnCloudinary from "../utils/Cloudinary.js";
 
 const generateAccessAndRefreshToken = async (id) => {
   try {
@@ -81,6 +82,27 @@ const createEmployee = asyncHandler(async (req, res) => {
     throw new ApiError(400, "Email already exists, Please login!");
   }
 
+  console.log("req.files==", req.files);
+  let avatarLocalPath;
+  if (
+    req.files &&
+    Array.isArray(req.files.avatar) &&
+    req.files.avatar.length > 0
+  ) {
+    avatarLocalPath = req.files.avatar[0].path;
+  }
+  console.log("avatarLocalPath--", avatarLocalPath);
+
+  if (!avatarLocalPath) {
+    throw new ApiError(400, "Avatar is required");
+  }
+
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+
+   if (!avatar) {
+    throw new ApiError(400, "Avatar file is required");
+  }
+
   const emp = await Employee.create({
     name: name.toLowerCase(),
     email: email.toLowerCase(),
@@ -91,6 +113,7 @@ const createEmployee = asyncHandler(async (req, res) => {
     role,
     gender,
     teamLeader,
+    avatar: avatar.url,
   });
 
   console.log("Emp details ---", emp);

@@ -120,9 +120,9 @@ function ChatPage() {
         }}
       >
         <h3>Contacts</h3>
-        <div style={{ marginBottom: "10px" }}>
+        {/* <div style={{ marginBottom: "10px" }}>
           Status: {isConnected ? "🟢 Connected" : "🔴 Disconnected"}
-        </div>
+        </div> */}
         <div style={{ marginBottom: "10px" }}>
           Online: {activeUsers.length} users
         </div>
@@ -194,7 +194,7 @@ function ChatPage() {
                       style={{
                         padding: "8px 12px",
                         borderRadius: "10px",
-                        backgroundColor: isCurrentUser ? "#007bff" : "#e9ecef",
+                        backgroundColor: isCurrentUser ? "oklch(0.28 0.03 257.69)" : "#e9ecef",
                         color: isCurrentUser ? "white" : "black",
                         maxWidth: "70%",
                       }}
@@ -229,7 +229,7 @@ function ChatPage() {
                 disabled={!isConnected || !input.trim()}
                 style={{
                   padding: "10px 20px",
-                  backgroundColor: "#007bff",
+                  backgroundColor: "oklch(0.28 0.03 257.69)",
                   color: "white",
                   border: "none",
                   borderRadius: "5px",

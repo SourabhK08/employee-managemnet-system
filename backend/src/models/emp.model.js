@@ -36,8 +36,9 @@ const employeeSchema = new Schema(
       type: Number,
       required: true,
     },
-    image: {
+    avatar: {
       type: String,
+      required:true
     },
     department: [
       {
